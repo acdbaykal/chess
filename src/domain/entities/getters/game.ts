@@ -1,5 +1,4 @@
 import * as E from "fp-ts/lib/Either";
-import { left } from "fp-ts/lib/EitherT";
 import { flow, pipe } from "fp-ts/lib/function";
 import { Game } from "../Game";
 import { Square } from "../Square";
@@ -7,6 +6,8 @@ import { isSquareOccupied } from "./board";
 import {any} from 'ramda'
 import { getMoveFrom } from "./move";
 import { squareEquals } from "./square";
+import { applyMoveList } from "../transitions/board";
+import { Board } from "../Board";
 
 export const getInitialBoard = (game: Game) => game.initialBoard;
 export const getMoves = (game:Game) => game.moves;
@@ -29,4 +30,10 @@ export const hasPieceMoved = (game: Game, startingPosition: Square): E.Either<Er
         )),
         E.right
     )
+}
+
+export const getCurrentBoard = (game: Game):E.Either<Error, Board> =>{
+    const board = getInitialBoard(game);
+    const moves = getMoves(game);
+    return applyMoveList(board, moves);
 }

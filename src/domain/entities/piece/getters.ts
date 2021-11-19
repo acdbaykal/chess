@@ -1,4 +1,4 @@
-import { Piece, PieceColor, PieceType } from "../Piece";
+import { Piece, PieceColor, PieceType } from "./Piece";
 export const getPieceType = (p: Piece):PieceType => p.type;
 export const getPieceColor = (p: Piece):PieceColor => p.color;
 

@@ -1,7 +1,7 @@
-import { Board } from "../Board";
-import { Square } from "../Square";
-import {Piece} from '../Piece';
-import * as SqGetters  from './square'
+import { Board } from "./Board";
+import { Square } from "../square/Square";
+import {Piece} from '../piece/Piece';
+import * as SqGetters  from '../square/getters'
 import * as O from 'fp-ts/Option';
 import { flow } from "fp-ts/lib/function";
 

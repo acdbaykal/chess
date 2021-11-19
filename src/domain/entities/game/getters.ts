@@ -1,13 +1,13 @@
 import * as E from "fp-ts/lib/Either";
 import { flow, pipe } from "fp-ts/lib/function";
-import { Game } from "../Game";
-import { Square } from "../Square";
-import { isSquareOccupied } from "./board";
+import { Game } from "./Game";
+import { Square } from "../square/Square";
+import { isSquareOccupied } from "../board/getters";
 import {any} from 'ramda'
-import { getMoveFrom } from "./move";
-import { squareEquals } from "./square";
-import { applyMoveList } from "../transitions/board";
-import { Board } from "../Board";
+import { getMoveFrom } from "../move/getters";
+import { squareEquals } from "../square/getters";
+import { applyMoveList } from "../board/transitions";
+import { Board } from "../board/Board";
 
 export const getInitialBoard = (game: Game) => game.initialBoard;
 export const getMoves = (game:Game) => game.moves;

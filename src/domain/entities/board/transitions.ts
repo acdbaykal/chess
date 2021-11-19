@@ -1,13 +1,13 @@
-import { Board } from "../Board";
-import { Move } from "../Move";
+import { Board } from "./Board";
+import { Move } from "../move/Move";
 import {insert, omit, reduce} from 'ramda';
-import {toString} from '../getters/square';
+import {toString} from '../square/getters';
 import { flow, pipe } from "fp-ts/lib/function";
-import { getMoveFrom, getMoveTo } from "../getters/move";
+import { getMoveFrom, getMoveTo } from "../move/getters";
 import * as E from "fp-ts/lib/Either";
-import { getPieceAt } from "../getters/board";
-import { Square } from "../Square";
-import { Piece } from "../Piece";
+import { getPieceAt } from "./getters";
+import { Square } from "../square/Square";
+import { Piece } from "../piece/Piece";
 
 export const removePiece = (board: Board, square:Square): Board => 
     omit([toString(square)], board);

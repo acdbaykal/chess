@@ -1,4 +1,4 @@
-import {Square} from './Square';
+import {Square} from '../square/Square';
 
 export interface Move {
     from: Square,

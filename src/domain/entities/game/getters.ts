@@ -2,12 +2,13 @@ import * as E from "fp-ts/lib/Either";
 import { flow, pipe } from "fp-ts/lib/function";
 import { Game } from "./Game";
 import { Square } from "../square/Square";
-import { isSquareOccupied } from "../board/getters";
+import { getSquaresForPiece, isSquareOccupied } from "../board/getters";
 import {any} from 'ramda'
 import { getMoveFrom } from "../move/getters";
 import { squareEquals } from "../square/getters";
 import { applyMoveList } from "../board/transitions";
 import { Board } from "../board/Board";
+import { Piece } from "../piece/Piece";
 
 export const getInitialBoard = (game: Game) => game.initialBoard;
 export const getMoves = (game:Game) => game.moves;
@@ -37,3 +38,8 @@ export const getCurrentBoard = (game: Game):E.Either<Error, Board> =>{
     const moves = getMoves(game);
     return applyMoveList(board, moves);
 }
+
+export const getInitialSquaresForPiece = (game: Game, piece:Piece): Square[] => pipe(
+    getInitialBoard(game),
+    board => getSquaresForPiece(board, piece)
+);

@@ -16,5 +16,3 @@ export interface Piece {
     type: PieceType,
     color: PieceColor
 }
-
-export const createPiece = (color: PieceColor, type: PieceType) => ({ type, color });

@@ -1,11 +1,12 @@
 import { Board } from "./Board";
-import { A, createSquare, fromString, Square, _1 } from "../square/Square";
+import { A, Square, _1 } from "../square/Square";
 import {Piece} from '../piece/Piece';
 import * as SqGetters  from '../square/getters'
 import * as O from 'fp-ts/Option';
 import * as E from 'fp-ts/Either';
 import { flow } from "fp-ts/lib/function";
-import { equalstoPiece } from "../piece/getters";
+import { equalsToPiece } from "../piece/getters";
+import { createSquare, fromString } from "../square/constructors";
 
 export const getPieceAt = (board: Board, square: Square): O.Option<Piece> => {
     const key = SqGetters.toString(square);
@@ -19,7 +20,7 @@ export const isSquareOccupied = flow(
 
 export const getSquaresForPiece = (board: Board, piece: Piece): Square[] => {
     const squareStrings = Object.keys(board);
-    const isSamePiece = equalstoPiece(piece);
+    const isSamePiece = equalsToPiece(piece);
     return squareStrings.filter(key => {
             const currentPice = board[key];
             return isSamePiece(currentPice);

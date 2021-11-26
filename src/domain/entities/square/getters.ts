@@ -11,8 +11,8 @@ export const squareEquals = (s1: Square) => (s2: Square) =>
 
 /** is a square positionad at the right of another from white's perspactive  */
 export const isRightOf = (reference: Square) => (subject: Square): boolean => 
-    getLetterAxis(reference) > getLetterAxis(subject);
-
-/** is a square positionad at the left of another from white's perspactive  */
-export const isLeftOf = (reference: Square) => (subject: Square): boolean => 
     getLetterAxis(reference) < getLetterAxis(subject);
+
+/** is a square positionad at the left of another from white's perspective  */
+export const isLeftOf = (reference: Square) => (subject: Square): boolean => 
+    getLetterAxis(reference) > getLetterAxis(subject);

@@ -1,4 +1,3 @@
-import { pipe } from "fp-ts/lib/pipeable";
 import { Piece, PieceColor, PieceType } from "./Piece";
 export const getPieceType = (p: Piece):PieceType => p.type;
 export const getPieceColor = (p: Piece):PieceColor => p.color;
@@ -18,7 +17,7 @@ export const isPawn = isOfType(PieceType.Pawn);
 export const isQueen = isOfType(PieceType.Queen);
 export const isRook = isOfType(PieceType.Rook); 
 
-export const equalstoPiece = (p1:Piece) => (p2: Piece): boolean =>
+export const equalsToPiece = (p1:Piece) => (p2: Piece): boolean =>
     getPieceType(p1) === getPieceType(p2) && getPieceColor(p1) === getPieceColor(p2);
 
 export const pieceToString = (piece:Piece):string => `${getPieceColor(piece)} ${getPieceType(piece)}`;

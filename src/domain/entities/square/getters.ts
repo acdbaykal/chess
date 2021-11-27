@@ -16,3 +16,7 @@ export const isRightOf = (reference: Square) => (subject: Square): boolean =>
 /** is a square positionad at the left of another from white's perspective  */
 export const isLeftOf = (reference: Square) => (subject: Square): boolean => 
     getLetterAxis(reference) > getLetterAxis(subject);
+
+/** is a squre posined futher away from the white player then the reference*/
+export const isUpOf = (reference: Square) => (subject: Square): boolean => 
+    getNumericAxis(reference) < getNumericAxis(subject);

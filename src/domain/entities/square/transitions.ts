@@ -1,5 +1,5 @@
 import * as E from "fp-ts/lib/Either";
-import { pipe } from "fp-ts/lib/function";
+import { flow, pipe } from "fp-ts/lib/function";
 import { createSquare } from "./constructors";
 import { getLetterAxis, getNumericAxis } from "./getters";
 import { A, Coordinate, H, Square, _1, _8 } from "./Square";
@@ -37,3 +37,23 @@ export const toLower = (amount:number) => (sq:Square): E.Either<Error, Square> =
         newNum => newNum < _1 ? createOutOfBoardError() : E.right(newNum as Coordinate),
         E.map(numAxis => createSquare(getLetterAxis(sq), numAxis))
     )
+
+export const toUpRight = flow(
+    toUpper(1),
+    E.chain(toRight(1))
+);
+
+export const toUpLeft = flow(
+    toUpper(1),
+    E.chain(toLeft(1))
+);
+
+export const toBottomRight = flow(
+    toLower(1),
+    E.chain(toRight(1))
+);
+
+export const toBottomLeft = flow(
+    toLower(1),
+    E.chain(toLeft(1))
+);

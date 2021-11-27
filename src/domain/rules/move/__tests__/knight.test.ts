@@ -1,36 +1,27 @@
-import { getMoves } from "../../move/knight";
-import { Move } from "../../../entities/move/Move";
+import { getLegalMoves, getMoves } from "../../move/knight";
 import { A, B, C, D, E, Square, _1, _2, _3, _4, _5 } from "../../../entities/square/Square";
 import { createSquare } from "../../../entities/square/constructors";
-import { createMove } from "../../../entities/move/constructors";
-import { getMoveTo } from "../../../entities/move/getters";
-import { getLetterAxis, getNumericAxis, isLeftOf, isUpOf } from "../../../entities/square/getters";
+import { createMoveList } from "../../../entities/move/constructors";
+import { createBoardFromList } from "../../../entities/board/constructors";
+import { createPiece } from "../../../entities/piece/constructors";
+import { PieceColor, PieceType } from "../../../entities/piece/Piece";
+import { sortMoveList } from "../../../entities/move/transition";
+import { pipe } from "fp-ts/lib/function";
 
 describe('domain/rule/move/knight', () => {
     describe('getMoves', () => {
-
-        // unfortunatelly we must sort the move arrays in order to compare them
-        const sortFn = (move1: Move, move2: Move):number => {
-            const to1 = getMoveTo(move1);
-            const to2 = getMoveTo(move2);
-            const sameLetter = getLetterAxis(to1) === getLetterAxis(to2);
-            const sameNum = getNumericAxis(to1) === getNumericAxis(to2);
-            
-            if(sameLetter && sameNum){
-                return 0;
-            } else if(sameLetter) {
-                return isUpOf(to1)(to2) ? -1 : 1; 
-            }
-
-            return isLeftOf(to1)(to2) ? -1 : 1;
-        }
-
-        it('calculates alll the moves from the given square', () => {
+        it('calculates all the moves from the given square', () => {
             const test  = (square: Square, expected: Square[]) =>{
-                const moves = getMoves(square).sort(sortFn);
-                const expectedMoves = expected.map(
-                    expectedSquare => createMove(square, expectedSquare)
-                ).sort(sortFn);
+                const moves = pipe(
+                    getMoves(square),
+                    sortMoveList
+                );
+                
+                const expectedMoves = pipe(
+                    createMoveList(square)(expected),
+                    sortMoveList
+                );
+
                 expect(moves).toEqual(expectedMoves);
             }
 
@@ -59,5 +50,34 @@ describe('domain/rule/move/knight', () => {
                 createSquare(E, _4),
             ]);
         });
-    })
+    });
+
+    describe('getLegalMoves', () => {
+        it('eliminates moves where the destination is occupied by a piece of the same color', () => {
+            const board = createBoardFromList([
+                [createSquare(B, _3), createPiece(PieceColor.White, PieceType.Knight)],
+                [createSquare(A, _1), createPiece(PieceColor.White, PieceType.Pawn)],
+                [createSquare(C, _1), createPiece(PieceColor.Black, PieceType.Pawn)]
+            ]);
+
+            const moves = pipe(
+                getLegalMoves(board, createSquare(B, _3)),
+                sortMoveList
+            );
+
+            const expected = pipe(
+                [
+                    createSquare(A, _5),
+                    createSquare(C, _1),
+                    createSquare(C, _5),
+                    createSquare(D, _2),
+                    createSquare(D, _4)
+                ],
+                createMoveList(createSquare(B, _3)),
+                sortMoveList
+            );
+
+            expect(moves).toEqual(expected);
+        });
+    });
 });

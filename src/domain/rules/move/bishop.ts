@@ -1,3 +1,4 @@
+import { isBishop } from "../../entities/piece/getters";
 import { toBottomLeft, toBottomRight, toUpLeft, toUpRight } from "../../entities/square/transitions";
 import { createDestinationGenerator, createGetLegalMoves } from "./helpers";
 
@@ -8,4 +9,4 @@ const destinationGenerators = [
     createDestinationGenerator(toBottomRight)
 ];
 
-export const getLegalMoves = createGetLegalMoves(destinationGenerators)
+export const getLegalMoves = createGetLegalMoves(destinationGenerators, isBishop)

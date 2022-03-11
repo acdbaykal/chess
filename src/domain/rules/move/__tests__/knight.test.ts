@@ -7,6 +7,7 @@ import { createPiece } from "../../../entities/piece/constructors";
 import { PieceColor, PieceType } from "../../../entities/piece/Piece";
 import { sortMoveList } from "../../../entities/move/transition";
 import { pipe } from "fp-ts/lib/function";
+import { reversePieceColor } from "../../../entities/piece/transition";
 
 describe('domain/rule/move/knight', () => {
     describe('getMoves', () => {
@@ -78,6 +79,35 @@ describe('domain/rule/move/knight', () => {
             );
 
             expect(moves).toEqual(expected);
+        });
+
+        it('eliminites moves which would land an the opposite king', () => {
+            const test = (pieceColor: PieceColor) => {
+                const oppositeColor = reversePieceColor(pieceColor);
+                const board = createBoardFromList([
+                    [createSquare(B, _3), createPiece(pieceColor, PieceType.Knight)],
+                    [createSquare(A, _1), createPiece(oppositeColor, PieceType.King)]
+                ]);
+
+                const moves = pipe(
+                    getLegalMoves(board, createSquare(B, _3)),
+                    sortMoveList
+                );
+
+                const expected = pipe(
+                    [
+                        createSquare(A, _5),
+                        createSquare(C, _5),
+                        createSquare(D, _4),
+                        createSquare(D, _2),
+                        createSquare(C, _1)
+                    ],
+                    createMoveList( createSquare(B, _3)),
+                    sortMoveList
+                );
+
+                expect(moves).toEqual(expected);
+            }
         });
     });
 });

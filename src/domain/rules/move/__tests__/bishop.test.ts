@@ -88,6 +88,43 @@ describe('domain/rules/mpves/bishop', () => {
             test(PieceColor.Black);
         });
 
+        it('stops when it encounters the oppsite color king', () => {
+            const test = (color: PieceColor) => {
+                const reverseColor = reversePieceColor(color);
+                const board = createBoardFromList([
+                    [createSquare(D, _5), createPiece(color, PieceType.Bishop)],
+                    [createSquare(C, _4), createPiece(reverseColor, PieceType.King)],
+                ]);
+
+                const moves = pipe(
+                    getLegalMoves(board, createSquare(D, _5)),
+                    sortMoveList
+                );
+
+                const expected = pipe(
+                    [
+                        createSquare(A, _8),
+                        createSquare(B, _7),
+                        createSquare(C, _6),
+                        createSquare(E, _4),
+                        createSquare(F, _3),
+                        createSquare(G, _2),
+                        createSquare(H, _1),
+                        createSquare(E, _6),
+                        createSquare(F, _7),
+                        createSquare(G, _8)
+                    ],
+                    createMoveList(createSquare(D, _5)),
+                    sortMoveList
+                );
+
+                expect(moves).toEqual(expected);
+            };
+
+            test(PieceColor.Black);
+            test(PieceColor.White);
+        });
+
         it('stops at and includes a square  with a piece  of the opposite color on it', () => {
             const test = (color: PieceColor) => {
                 const oppositeColor = reversePieceColor(color);

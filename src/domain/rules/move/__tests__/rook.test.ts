@@ -144,6 +144,41 @@ describe('domain/rules/moves/rook', () => {
                 test(PieceColor.White);
                 test(PieceColor.Black);
             });
+
+            it('does not include the square which hosts the oppiste colored king', () => {
+                const test = (color: PieceColor) => {
+                    const square = createSquare(D, _5);
+                    const oppositeColor = reversePieceColor(color);
+                    const board = createBoardFromList([
+                        [square, createPiece(color, PieceType.Rook)],
+                        [createSquare(D, _7), createPiece(oppositeColor, PieceType.King)]
+                    ]);
+
+                    const moves = pipe(
+                        getLegalMoves(board, square),
+                        sortMoveList
+                    );
+
+                    const expected = pipe(
+                        [
+                            createSquare(D, _1),
+                            createSquare(D, _2),
+                            createSquare(D, _3),
+                            createSquare(D, _4),
+                            createSquare(D, _6),
+                            createSquare(C, _5),
+                            createSquare(B, _5),
+                            createSquare(E, _5),
+                            createSquare(F, _5),
+                            createSquare(G, _5),
+                        ],
+                        createMoveList(square),
+                        sortMoveList
+                    );
+                    
+                    expect(moves).toEqual(expected);
+                };
+            });
         });
     });
 });

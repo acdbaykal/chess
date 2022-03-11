@@ -1,4 +1,6 @@
 import { pipe } from "fp-ts/lib/function";
+import { showString } from "fp-ts/lib/Show";
+import { createFactory } from "react";
 import { createBoardFromList } from "../../../entities/board/constructors";
 import { createMoveList } from "../../../entities/move/constructors";
 import { sortMoveList } from "../../../entities/move/transition";
@@ -130,54 +132,110 @@ describe('domain/rules/moves/queen', () => {
     });
 
     describe('with pieces of the opposite color on the board', () => {
-        const test  = (color: PieceColor) => {
-            const square = createSquare(D, _5);
-            const oppositeColor = reversePieceColor(color);
-            const board = createBoardFromList([
-                [square, createPiece(color, PieceType.Queen)],
-                [createSquare(D, _7), createPiece(oppositeColor, PieceType.Pawn)],
-                [createSquare(D, _3), createPiece(oppositeColor, PieceType.Bishop)],
-                [createSquare(D, _4), createPiece(oppositeColor, PieceType.Queen)],
-                [createSquare(B, _5), createPiece(oppositeColor, PieceType.Pawn)],
-                [createSquare(G, _5), createPiece(oppositeColor, PieceType.Pawn)],
-                [createSquare(B, _3), createPiece(oppositeColor, PieceType.Pawn)],
-                [createSquare(C, _4), createPiece(oppositeColor, PieceType.Pawn)],
-                [createSquare(B, _7), createPiece(oppositeColor, PieceType.Rook)],
-                [createSquare(F, _7), createPiece(oppositeColor, PieceType.Bishop)],
-                [createSquare(G, _2), createPiece(oppositeColor, PieceType.Knight)]
-            ]);
-            
-            const moves = pipe(
-                getLegalMoves(board, square),
-                sortMoveList
-            );
-            
-            const expectedMoves = pipe(
-                [
-                    createSquare(B, _5),
-                    createSquare(B, _7),
-                    createSquare(C, _4),
-                    createSquare(C, _5),
-                    createSquare(C, _6),
-                    createSquare(D, _4),
-                    createSquare(D, _6),
-                    createSquare(D, _7),
-                    createSquare(E, _4),
-                    createSquare(E, _5),
-                    createSquare(E, _6),
-                    createSquare(F, _3),
-                    createSquare(F, _5),
-                    createSquare(F, _7),
-                    createSquare(G, _5),
-                    createSquare(G, _2)
-                ],
-                createMoveList(square),
-                sortMoveList
-            );
-            expect(moves).toEqual(expectedMoves);
-        };
-
+        
         it('includes the pices in the move destionations and stops', () => {
+            const test  = (color: PieceColor) => {
+                const square = createSquare(D, _5);
+                const oppositeColor = reversePieceColor(color);
+                const board = createBoardFromList([
+                    [square, createPiece(color, PieceType.Queen)],
+                    [createSquare(D, _7), createPiece(oppositeColor, PieceType.Pawn)],
+                    [createSquare(D, _3), createPiece(oppositeColor, PieceType.Bishop)],
+                    [createSquare(D, _4), createPiece(oppositeColor, PieceType.Queen)],
+                    [createSquare(B, _5), createPiece(oppositeColor, PieceType.Pawn)],
+                    [createSquare(G, _5), createPiece(oppositeColor, PieceType.Pawn)],
+                    [createSquare(B, _3), createPiece(oppositeColor, PieceType.Pawn)],
+                    [createSquare(C, _4), createPiece(oppositeColor, PieceType.Pawn)],
+                    [createSquare(B, _7), createPiece(oppositeColor, PieceType.Rook)],
+                    [createSquare(F, _7), createPiece(oppositeColor, PieceType.Bishop)],
+                    [createSquare(G, _2), createPiece(oppositeColor, PieceType.Knight)]
+                ]);
+                
+                const moves = pipe(
+                    getLegalMoves(board, square),
+                    sortMoveList
+                );
+                
+                const expectedMoves = pipe(
+                    [
+                        createSquare(B, _5),
+                        createSquare(B, _7),
+                        createSquare(C, _4),
+                        createSquare(C, _5),
+                        createSquare(C, _6),
+                        createSquare(D, _4),
+                        createSquare(D, _6),
+                        createSquare(D, _7),
+                        createSquare(E, _4),
+                        createSquare(E, _5),
+                        createSquare(E, _6),
+                        createSquare(F, _3),
+                        createSquare(F, _5),
+                        createSquare(F, _7),
+                        createSquare(G, _5),
+                        createSquare(G, _2)
+                    ],
+                    createMoveList(square),
+                    sortMoveList
+                );
+                expect(moves).toEqual(expectedMoves);
+            };
+    
+            test(PieceColor.White);
+            test(PieceColor.Black);
+        });
+
+        it('excludes the square at wich the oopsite colored king stands', () => {
+            const test = (color: PieceColor) => {
+                const square = createSquare(D, _5);
+                const oppositeColor = reversePieceColor(color);
+                const board = createBoardFromList([
+                    [square, createPiece(color, PieceType.Queen)],
+                    [createSquare(D, _7), createPiece(oppositeColor, PieceType.King)]
+                ]);
+                const moves = pipe(
+                    getLegalMoves(board, square),
+                    sortMoveList
+                );
+                const expected = pipe(
+                    [
+                        //vert
+                        createSquare(D, _6),
+                        createSquare(D, _4),
+                        createSquare(D, _3),
+                        createSquare(D, _2),
+                        createSquare(D, _1),
+                        //hor
+                        createSquare(A, _5),
+                        createSquare(B, _5),
+                        createSquare(C, _5),
+                        createSquare(E, _5),
+                        createSquare(F, _5),
+                        createSquare(G, _5),
+                        createSquare(H, _5),
+                        //diag 1
+                        createSquare(A, _8),
+                        createSquare(B, _7),
+                        createSquare(C, _6),
+                        createSquare(E, _4),
+                        createSquare(F, _3),
+                        createSquare(G, _2),
+                        createSquare(H, _1),
+                        //diag 2
+                        createSquare(G, _8),
+                        createSquare(F, _7),
+                        createSquare(E, _6),
+                        createSquare(C, _4),
+                        createSquare(B, _3),
+                        createSquare(A, _2)
+                    ],
+                    createMoveList(square),
+                    sortMoveList
+                );
+
+                expect(moves).toEqual(expected);
+            };
+
             test(PieceColor.White);
             test(PieceColor.Black);
         });

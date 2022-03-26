@@ -1,7 +1,7 @@
 import { pipe } from 'fp-ts/lib/pipeable';
 import { createBoardFromList } from '../../../entities/board/constructors';
 import { createGame } from '../../../entities/game/constructors';
-import { createMove } from '../../../entities/move/constructors';
+import { createRegularMove } from '../../../entities/move/constructors';
 import { isSameMoveAs } from '../../../entities/move/getters';
 import { Move } from '../../../entities/move/Move';
 import { createPiece } from '../../../entities/piece/constructors';
@@ -20,7 +20,7 @@ describe('domain/rule/move/pawn', () => {
     
                 const game = createGame(board, []);
                 const legalMoves:Move[] = getLegalMoves(game, start);
-                const expected = createMove(
+                const expected = createRegularMove(
                     start,
                     end
                 );
@@ -43,7 +43,7 @@ describe('domain/rule/move/pawn', () => {
 
             const game = createGame(board, []);
             const legalMoves:Move[] = getLegalMoves(game, square);
-            const nonlegal = createMove(square, destination);
+            const nonlegal = createRegularMove(square, destination);
             const forwardMove = legalMoves.find(isSameMoveAs(nonlegal));
             expect(forwardMove).not.toBeDefined();
         });
@@ -61,7 +61,7 @@ describe('domain/rule/move/pawn', () => {
                 const game = createGame(board, []);
                 const destination = createSquare(B, destibationRow);
                 const legalMoves:Move[] = getLegalMoves(game, start);
-                const expected = createMove(start, destination);
+                const expected = createRegularMove(start, destination);
                 const forwardMove = legalMoves.find(isSameMoveAs(expected));
                 expect(forwardMove).toEqual(expected)
             };
@@ -81,7 +81,7 @@ describe('domain/rule/move/pawn', () => {
                 const game = createGame(board, []);
                 const destination = createSquare(B, destibationRow);
                 const legalMoves:Move[] = getLegalMoves(game, start);
-                const nonlegal = createMove(start, destination);
+                const nonlegal = createRegularMove(start, destination);
                 const forwardMove = legalMoves.find(isSameMoveAs(nonlegal));
                 expect(forwardMove).not.toBeDefined();
             };
@@ -103,7 +103,7 @@ describe('domain/rule/move/pawn', () => {
                 const game = createGame(board, []);
 
                 const legalMoves:Move[] = getLegalMoves(game, start);
-                const nonlegal = createMove(start, destination);
+                const nonlegal = createRegularMove(start, destination);
                 const forwardMove = legalMoves.find(isSameMoveAs(nonlegal));
                 expect(forwardMove).not.toBeDefined();
             };

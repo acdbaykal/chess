@@ -5,7 +5,7 @@ import * as E from 'fp-ts/lib/Either';
 import {filter as filterArray, map as mapArray, reduce} from 'ramda';
 import { Move } from "../../entities/move/Move";
 import { getOrUndefined } from "../../../lib/either";
-import { createMove } from "../../entities/move/constructors";
+import { createRegularMove } from "../../entities/move/constructors";
 import { Board } from "../../entities/board/Board";
 import { getPieceAt, getPieceColorAt } from "../../entities/board/getters";
 import * as O from "fp-ts/Option";
@@ -35,7 +35,7 @@ export const getMoves = (position: Square): Move[] =>
         reduce((moves: Move[], square: E.Either<Error, Square>) => {
             if(E.isRight(square)){
                 const toSquare = getOrUndefined(square) as Square;
-                moves.push(createMove(position, toSquare))
+                moves.push(createRegularMove(position, toSquare))
             }
             
             return moves;

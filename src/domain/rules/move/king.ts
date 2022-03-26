@@ -6,7 +6,7 @@ import {apply as applyTo, flow, pipe} from 'fp-ts/function';
 import { toLeft, toLower, toRight, toUpper} from "../../entities/square/transitions";
 import { filter as filterList, map as mapList } from 'fp-ts/Array'
 import { chain as chainEither, isRight, getOrElse, map as mapEither, filterOrElse, fromOption, flatten as flattenEither } from "fp-ts/lib/Either";
-import { createMove } from "../../entities/move/constructors";
+import { createRegularMove } from "../../entities/move/constructors";
 import { createSquare } from "../../entities/square/constructors";
 import { getCurrentBoard } from "../../entities/game/getters";
 import { getPieceColorAt, isOccupiedByColor, isSquareOccupied } from "../../entities/board/getters";
@@ -34,7 +34,7 @@ const getNonCastlingMoves = (board: Board, square: Square):Move[] => pipe(
     )),
     filterList(isRight),
     mapList(getOrElse(() => createSquare(A, _1))),
-    mapList(destination => createMove(square, destination))
+    mapList(destination => createRegularMove(square, destination))
 );
 
 export const getLegalMoves = (game: Game, square: Square) =>  pipe(

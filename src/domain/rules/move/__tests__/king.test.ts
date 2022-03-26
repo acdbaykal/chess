@@ -8,7 +8,7 @@ import {getLegalMoves} from '../king';
 import {Move} from '../../../entities/move/Move';
 import { pipe } from "fp-ts/lib/function";
 import { sortMoveList } from "../../../entities/move/transition";
-import { createMove } from "../../../entities/move/constructors";
+import { createRegularMove } from "../../../entities/move/constructors";
 import { map as mapList } from 'fp-ts/Array';
 import {Board} from '../../../entities/board/Board';
 import {map as mapEither, right} from 'fp-ts/Either';
@@ -24,7 +24,7 @@ describe('domain/rules/moves/king', () => {
             );
             const expectedMoves = pipe(
                 destinations,
-                mapList(destination => createMove(kingPosition, destination)),
+                mapList(destination => createRegularMove(kingPosition, destination)),
                 sortMoveList,
                 right
             );

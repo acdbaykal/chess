@@ -1,6 +1,6 @@
 import { isLeft, right } from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/function";
-import { createMove } from "../../move/constructors";
+import { createRegularMove } from "../../move/constructors";
 import { createPiece } from "../../piece/constructors";
 import { PieceColor, PieceType } from "../../piece/Piece";
 import { createSquare } from "../../square/constructors";
@@ -52,7 +52,7 @@ describe('domain/entities/board/transitions', () => {
                 [createSquare(A, _2), createPiece(PieceColor.Black, PieceType.Bishop)] 
             ]);
 
-            const move = createMove(createSquare(A, _2), createSquare(A, _3))
+            const move = createRegularMove(createSquare(A, _2), createSquare(A, _3))
             const derivedBoard = applyMove(originalBoard, move);
             const expected = pipe(
                 createBoardFromList([
@@ -71,7 +71,7 @@ describe('domain/entities/board/transitions', () => {
                 [createSquare(A, _2), createPiece(PieceColor.Black, PieceType.Bishop)] 
             ]);
 
-            const move = createMove(createSquare(A, _3), createSquare(A, _2));
+            const move = createRegularMove(createSquare(A, _3), createSquare(A, _2));
             const fail = applyMove(board, move);
             expect(isLeft(fail)).toBe(true);
         });
@@ -85,10 +85,10 @@ describe('domain/entities/board/transitions', () => {
             ]);
     
             const moveList = [
-                createMove(createSquare(A, _2), createSquare(B, _3)),
-                createMove(createSquare(A, _3), createSquare(B, _2)),
-                createMove(createSquare(B, _3), createSquare(H, _8)),
-                createMove(createSquare(B, _2), createSquare(A, _8))
+                createRegularMove(createSquare(A, _2), createSquare(B, _3)),
+                createRegularMove(createSquare(A, _3), createSquare(B, _2)),
+                createRegularMove(createSquare(B, _3), createSquare(H, _8)),
+                createRegularMove(createSquare(B, _2), createSquare(A, _8))
             ];
 
             const derivedBoard = applyMoveList(originalBoard, moveList);
@@ -109,9 +109,9 @@ describe('domain/entities/board/transitions', () => {
             ]);
     
             const moveList = [
-                createMove(createSquare(A, _2), createSquare(B, _3)),
-                createMove(createSquare(A, _2), createSquare(B, _3)), // Piece at a2 has moved, the calculation should fail
-                createMove(createSquare(B, _3), createSquare(H, _8))
+                createRegularMove(createSquare(A, _2), createSquare(B, _3)),
+                createRegularMove(createSquare(A, _2), createSquare(B, _3)), // Piece at a2 has moved, the calculation should fail
+                createRegularMove(createSquare(B, _3), createSquare(H, _8))
             ];
 
             const fail = applyMoveList(originalBoard, moveList);

@@ -4,7 +4,7 @@ import { getNumericAxis, toString } from "../../entities/square/getters";
 import { Square, _2, _7 } from "../../entities/square/Square";
 import {toLower, toUpper} from '../../entities/square/transitions';
 import { chain as chainEither, map as mapRight, filterOrElse, fold, fromOption, getOrElse, Either } from 'fp-ts/Either';
-import { createMove } from "../../entities/move/constructors";
+import { createRegularMove } from "../../entities/move/constructors";
 import { PieceColor } from "../../entities/piece/Piece";
 import { getCurrentBoard } from "../../entities/game/getters";
 import { getPieceColorAt, isSquareOccupied } from "../../entities/board/getters";
@@ -46,7 +46,7 @@ const getForwardDoubleSquareFromBoard = (square: Square) => (board:Board) =>
 
 const getOrEmpty = (square:Square) => fold<Error, Square, Move[]>(
     () => [],
-    destination => [createMove(square, destination)]
+    destination => [createRegularMove(square, destination)]
 );
 
 const combineMoves = (square:Square) => flow(

@@ -3,11 +3,13 @@ import { Move } from "../move/Move";
 import {insert, omit, reduce} from 'ramda';
 import {toString} from '../square/getters';
 import { flow, pipe } from "fp-ts/lib/function";
-import { getMoveFrom, getMoveTo } from "../move/getters";
+import { getMoveFrom, getMoveTo, isPromotionMove, getPromotionPieceType } from "../move/getters";
 import * as E from "fp-ts/lib/Either";
 import { getPieceAt } from "./getters";
 import { Square } from "../square/Square";
 import { Piece } from "../piece/Piece";
+import { createPiece } from "../piece/constructors";
+import { getPieceColor } from "../piece/getters";
 
 export const removePiece = (board: Board, square:Square): Board => 
     omit([toString(square)], board);
@@ -29,7 +31,9 @@ export const applyMove = (board: Board, move: Move): E.Either<Error, Board> => {
             return pipe(
                 board,
                 board => removePiece(board, from),
-                board => setPiece(board, to, piece)
+                board => isPromotionMove(move) 
+                    ? setPiece(board, to, createPiece(getPieceColor(piece), getPromotionPieceType(move))) 
+                    : setPiece(board, to, piece)
             );
         })
     

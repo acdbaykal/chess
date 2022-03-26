@@ -1,10 +1,11 @@
+import { create } from "fp-ts/lib/Date";
 import { isLeft, right } from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/function";
-import { createRegularMove } from "../../move/constructors";
+import { createPromotion, createRegularMove } from "../../move/constructors";
 import { createPiece } from "../../piece/constructors";
 import { PieceColor, PieceType } from "../../piece/Piece";
 import { createSquare } from "../../square/constructors";
-import { A, B, H, _2, _3, _8 } from "../../square/Square";
+import { A, B, E, H, _2, _3, _7, _8 } from "../../square/Square";
 import { createBoardFromList } from "../constructors";
 import { applyMove, applyMoveList, removePiece, setPiece } from "../transitions";
 
@@ -78,24 +79,27 @@ describe('domain/entities/board/transitions', () => {
     });
 
     describe('applytMoveList', () => {
-        it('creates a new board with all mpves applied', () =>{
+        it('creates a new board with all moves applied', () =>{
             const originalBoard = createBoardFromList([
                 [createSquare(A, _2), createPiece(PieceColor.Black, PieceType.Bishop)],
-                [createSquare(A, _3), createPiece(PieceColor.White, PieceType.Bishop)]
+                [createSquare(A, _3), createPiece(PieceColor.White, PieceType.Bishop)],
+                [createSquare(E, _7), createPiece(PieceColor.White, PieceType.Pawn)]
             ]);
     
             const moveList = [
                 createRegularMove(createSquare(A, _2), createSquare(B, _3)),
                 createRegularMove(createSquare(A, _3), createSquare(B, _2)),
                 createRegularMove(createSquare(B, _3), createSquare(H, _8)),
-                createRegularMove(createSquare(B, _2), createSquare(A, _8))
+                createRegularMove(createSquare(B, _2), createSquare(A, _8)),
+                createPromotion(createSquare(E, _7), createSquare(E, _8), PieceType.Queen)
             ];
 
             const derivedBoard = applyMoveList(originalBoard, moveList);
             const expected = pipe(
                 createBoardFromList([
                     [createSquare(H, _8), createPiece(PieceColor.Black, PieceType.Bishop)],
-                    [createSquare(A, _8), createPiece(PieceColor.White, PieceType.Bishop)]
+                    [createSquare(A, _8), createPiece(PieceColor.White, PieceType.Bishop)],
+                    [createSquare(E, _8), createPiece(PieceColor.White, PieceType.Queen)]
                 ]),
                 right
             )

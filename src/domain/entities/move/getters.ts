@@ -1,4 +1,5 @@
 import { is } from "ramda";
+import { PieceType } from "../piece/Piece";
 import { squareEquals } from "../square/getters";
 import { Move, MoveType, Promotion, RegularMove } from "./Move";
 
@@ -13,3 +14,6 @@ export const isRegularMove = (move: Move):move is RegularMove =>
 
 export const isPromotionMove = (move: Move):move is Promotion =>
     move.__type__ === MoveType.PROMOTION;
+
+export const getPromotionPieceType = (move: Promotion): PieceType =>
+    move.pieceType;

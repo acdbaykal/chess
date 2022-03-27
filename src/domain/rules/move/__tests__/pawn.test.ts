@@ -1,4 +1,5 @@
 import { pipe } from 'fp-ts/lib/pipeable';
+import { not } from 'ramda';
 import { createBoardFromList } from '../../../entities/board/constructors';
 import { createGame } from '../../../entities/game/constructors';
 import { createRegularMove } from '../../../entities/move/constructors';
@@ -7,7 +8,7 @@ import { Move } from '../../../entities/move/Move';
 import { createPiece } from '../../../entities/piece/constructors';
 import { PieceColor, PieceType } from '../../../entities/piece/Piece';
 import { createSquare } from '../../../entities/square/constructors';
-import { B, E, Square, _2, _3, _4, _5, _6, _7 } from '../../../entities/square/Square';
+import { A, B, C, D, E, F, Square, _2, _3, _4, _5, _6, _7 } from '../../../entities/square/Square';
 import {getLegalMoves} from '../pawn';
 
 describe('domain/rule/move/pawn', () => {
@@ -110,6 +111,113 @@ describe('domain/rule/move/pawn', () => {
 
             test(PieceColor.Black);
             test(PieceColor.White);
+        });
+    });
+
+    describe('taking', () => {
+        it('includes (regular) taking moves for white', () => {
+
+            const test = (start: Square, firstTake:Square, secondTake: Square) => {
+                const board = createBoardFromList([
+                    [start, createPiece(PieceColor.White, PieceType.Pawn)],
+                    [firstTake, createPiece(PieceColor.Black, PieceType.Pawn)],
+                    [secondTake, createPiece(PieceColor.Black, PieceType.Pawn)]
+                ]);
+                const game = createGame(board, []);
+    
+                const legalMoves = getLegalMoves(game, start);
+                const firstExpected = legalMoves.find(isSameMoveAs(
+                    createRegularMove(start, firstTake)
+                ));
+                const secondExpected = legalMoves.find(isSameMoveAs(
+                    createRegularMove(start, secondTake)
+                ));
+                expect(firstExpected).toBeDefined();
+                expect(secondExpected).toBeDefined();
+            };
+
+            test(
+                createSquare(E, _4),
+                createSquare(D, _5),
+                createSquare(F, _5)
+            );
+
+            test(
+                createSquare(B, _3),
+                createSquare(A, _4),
+                createSquare(C, _4)
+            );
+        });
+
+        it('includes (regular) taking moves for black', () => {
+            const test = (start: Square, firstTake:Square, secondTake: Square) => {
+                const board = createBoardFromList([
+                    [start, createPiece(PieceColor.Black, PieceType.Pawn)],
+                    [firstTake, createPiece(PieceColor.White, PieceType.Pawn)],
+                    [secondTake, createPiece(PieceColor.White, PieceType.Pawn)]
+                ]);
+                const game = createGame(board, []);
+    
+                const legalMoves = getLegalMoves(game, start);
+                const firstExpected = legalMoves.find(isSameMoveAs(
+                    createRegularMove(start, firstTake)
+                ));
+                const secondExpected = legalMoves.find(isSameMoveAs(
+                    createRegularMove(start, secondTake)
+                ));
+                expect(firstExpected).toBeDefined();
+                expect(secondExpected).toBeDefined();
+            };
+
+            test(
+                createSquare(E, _5),
+                createSquare(D, _4),
+                createSquare(F, _4)
+            );
+
+            test(
+                createSquare(B, _4),
+                createSquare(A, _3),
+                createSquare(C, _3)
+            );
+        });
+
+        it('only takes opposite colored pieces', () => {
+            const start = createSquare(E, _5);
+            const board = createBoardFromList([
+                [start, createPiece(PieceColor.Black, PieceType.Pawn)],
+                [createSquare(D, _4), createPiece(PieceColor.White, PieceType.Pawn)],
+                [createSquare(F, _4), createPiece(PieceColor.Black, PieceType.Pawn)]
+            ]);
+            const game = createGame(board, []);
+
+            const legalMoves = getLegalMoves(game, start);
+            const firstExpected = legalMoves.find(isSameMoveAs(
+                createRegularMove(start, createSquare(D, _4))
+            ));
+            const secondExpected = legalMoves.find(isSameMoveAs(
+                createRegularMove(start, createSquare(F, _4))
+            ));
+            expect(firstExpected).toBeDefined();
+            expect(secondExpected).not.toBeDefined();
+        });
+
+        it('only includes sqaures with pieces on them', () => {
+            const start = createSquare(E, _5);
+            const board = createBoardFromList([
+                [start, createPiece(PieceColor.Black, PieceType.Pawn)]
+            ]);
+            const game = createGame(board, []);
+
+            const legalMoves = getLegalMoves(game, start);
+            const firstExpected = legalMoves.find(isSameMoveAs(
+                createRegularMove(start, createSquare(D, _4))
+            ));
+            const secondExpected = legalMoves.find(isSameMoveAs(
+                createRegularMove(start, createSquare(F, _4))
+            ));
+            expect(firstExpected).not.toBeDefined();
+            expect(secondExpected).not.toBeDefined();
         });
     });
 });

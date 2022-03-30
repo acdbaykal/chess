@@ -4,7 +4,7 @@ import { toRight, toUpper, toLeft, toLower } from "../../entities/square/transit
 import * as E from 'fp-ts/lib/Either';
 import {filter as filterArray, map as mapArray, reduce} from 'ramda';
 import { Move } from "../../entities/move/Move";
-import { getOrUndefined } from "../../../lib/either";
+import { getOrUndefined } from "../../../lib/option";
 import { createRegularMove } from "../../entities/move/constructors";
 import { Board } from "../../entities/board/Board";
 import { getPieceAt, getPieceColorAt } from "../../entities/board/getters";
@@ -18,22 +18,22 @@ const combineOptions = sequenceT(O.Apply);
 
 
 const moveTransitions = [
-    flow(toRight(2), E.chain(toUpper(1))),
-    flow(toRight(2), E.chain(toLower(1))),
-    flow(toLower(2), E.chain(toRight(1))),
-    flow(toLower(2), E.chain(toLeft(1))),
-    flow(toLeft(2), E.chain(toLower(1))),
-    flow(toLeft(2), E.chain(toUpper(1))),
-    flow(toUpper(2), E.chain(toLeft(1))),
-    flow(toUpper(2), E.chain(toRight(1)))
+    flow(toRight(2), O.chain(toUpper(1))),
+    flow(toRight(2), O.chain(toLower(1))),
+    flow(toLower(2), O.chain(toRight(1))),
+    flow(toLower(2), O.chain(toLeft(1))),
+    flow(toLeft(2), O.chain(toLower(1))),
+    flow(toLeft(2), O.chain(toUpper(1))),
+    flow(toUpper(2), O.chain(toLeft(1))),
+    flow(toUpper(2), O.chain(toRight(1)))
 ]
 
 export const getMoves = (position: Square): Move[] => 
     pipe(
         moveTransitions,
         mapArray(transition => transition(position)),
-        reduce((moves: Move[], square: E.Either<Error, Square>) => {
-            if(E.isRight(square)){
+        reduce((moves: Move[], square: O.Option<Square>) => {
+            if(O.isSome(square)){
                 const toSquare = getOrUndefined(square) as Square;
                 moves.push(createRegularMove(position, toSquare))
             }

@@ -112,6 +112,31 @@ describe('domain/rule/move/pawn', () => {
             test(PieceColor.Black);
             test(PieceColor.White);
         });
+
+        it('excludes moving two squares when the sqaure inbetween is occupied', () => {
+            const test = (pieceColor: PieceColor) => {
+                const column = B;
+                const row = pieceColor === PieceColor.Black ? _7 : _2;
+                const inbetweenRow = pieceColor === PieceColor.Black ? _6 : _3;
+                const destibationRow = pieceColor === PieceColor.Black ? _5 : _4;
+                const destination = createSquare(B, destibationRow);
+                const inbetweenSquare = createSquare(column, inbetweenRow);
+                const start = createSquare(column, row);
+                const board = createBoardFromList([
+                    [start, createPiece(pieceColor, PieceType.Pawn)],
+                    [inbetweenSquare, createPiece(PieceColor.White, PieceType.Bishop)]
+                ]);
+                const game = createGame(board, []);
+
+                const legalMoves:Move[] = getLegalMoves(game, start);
+                const nonlegal = createRegularMove(start, destination);
+                const forwardMove = legalMoves.find(isSameMoveAs(nonlegal));
+                expect(forwardMove).not.toBeDefined();
+            };
+
+            test(PieceColor.Black);
+            test(PieceColor.White);
+        });
     });
 
     describe('taking', () => {

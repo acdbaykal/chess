@@ -3,20 +3,20 @@ import { Move } from "../../entities/move/Move";
 import { getNumericAxis, toString } from "../../entities/square/getters";
 import { Square, _2, _4, _5, _7 } from "../../entities/square/Square";
 import {toLeft, toLower, toRight, toUpper} from '../../entities/square/transitions';
-import { chain as chainEither, map as mapRight, filterOrElse, fold, fromOption, getOrElse, Either, Apply} from 'fp-ts/Either';
+import { map as mapRight, getOrElse as getEitherOrElse} from 'fp-ts/Either';
 import { createRegularMove } from "../../entities/move/constructors";
 import { PieceColor } from "../../entities/piece/Piece";
 import { getCurrentBoard } from "../../entities/game/getters";
 import { getPieceColorAt, isSquareOccupied } from "../../entities/board/getters";
 import { flow, pipe } from "fp-ts/function";
-import { chain as chainOption, map as mapOption, filter as filterOption, fromEither} from "fp-ts/lib/Option";
+import { Apply, chain as chainOption, map as mapOption, filter as filterOption, getOrElse} from "fp-ts/lib/Option";
 import { Board } from "../../entities/board/Board";
 import { flatten, map } from "fp-ts/lib/Array";
 import { append, filter } from "ramda";
 import { getOrFalse, getOrUndefined } from "../../../lib/option";
 import { sequenceT } from "fp-ts/lib/Apply";
 
-const combineEither = sequenceT(Apply);
+const combineOption = sequenceT(Apply);
 
 const getForwardSquare = (amount:number) => (pieceColor: PieceColor) =>
     pieceColor === PieceColor.Black ? toLower(amount) : toUpper(amount);
@@ -33,12 +33,11 @@ const getForwardSingleSquareFromBoard = (square: Square) => (board:Board) =>
     pipe(
         getPieceColorAt(board, square),
         mapOption(getSingleForwardSquare),
-        fromOption(() => Error(`${toString(square)} is not oocupied by a pawn`)),
-        chainEither(_getForwardSquare => _getForwardSquare(square)),
-        filterOrElse(sq => !isSquareOccupied(board, sq), () => Error('Sqaure is already occupied'))
+        chainOption(_getForwardSquare => _getForwardSquare(square)),
+        filterOption(sq => !isSquareOccupied(board, sq))
     );
 
-const getBothForwardSquares = (square: Square) => (pieceColor:PieceColor) => combineEither(
+const getBothForwardSquares = (square: Square) => (pieceColor:PieceColor) => combineOption(
     getDoubleForwardSquare(pieceColor)(square),
     getSingleForwardSquare(pieceColor)(square)
 );
@@ -47,50 +46,37 @@ const getForwardDoubleSquareFromBoard = (square: Square) => (board:Board) =>
     pipe(
         getPieceColorAt(board, square),
         filterOption(isAtHome(square)),
-        fromOption(() => Error(`${toString(square)} is not oocupied by a pawn or is not home row`)),
-        chainEither(getBothForwardSquares(square)),
-        filterOrElse(
-            ([doubleSq, singleSq]) => !isSquareOccupied(board, doubleSq) && !isSquareOccupied(board, singleSq), 
-            () => Error('Sqaure is already occupied')
+        chainOption(getBothForwardSquares(square)),
+        filterOption(
+            ([doubleSq, singleSq]) => !isSquareOccupied(board, doubleSq) && !isSquareOccupied(board, singleSq)
         ),
-        mapRight(([doubleSq]) => doubleSq)
+        mapOption(([doubleSq]) => doubleSq)
     );
-
-
-const getOrEmpty = (square:Square) => fold<Error, Square, Move[]>(
-    () => [],
-    destination => [createRegularMove(square, destination)]
-);
 
 const getWhiteFirstTakeDestination = flow(
     toLeft(1),
-    chainEither(toUpper(1)),
-    fromEither
+    chainOption(toUpper(1))
 );
 
 const getWhiteSecondTakeDestination = flow(
     toRight(1),
-    chainEither(toUpper(1)),
-    fromEither
+    chainOption(toUpper(1))
 );
 
 const getBlackFirstTakeDestination = flow(
     toLeft(1),
-    chainEither(toLower(1)),
-    fromEither
+    chainOption(toLower(1))
 );
 
 const getBlackSecondTakeDestination = flow(
     toRight(1),
-    chainEither(toLower(1)),
-    fromEither
+    chainOption(toLower(1))
 );
 
-const getTakingMoves = (square: Square) => (board: Board):Either<Error, Move[]> => {
+const getTakingMoves = (square: Square) => (board: Board):Move[] => {
     return pipe(
         getPieceColorAt(board, square),
-        fromOption(() => Error(`No piece present at square ${toString(square)}`)),
-        mapRight(pieceColor => 
+        mapOption(pieceColor => 
             pipe(
                 pieceColor === PieceColor.White
                     ?[
@@ -111,22 +97,24 @@ const getTakingMoves = (square: Square) => (board: Board):Either<Error, Move[]> 
                     destination => createRegularMove(square, destination as Square)
                 ))
             )
-        )
+        ),
+        getOrElse(() => [] as Move[])
     );
 }
 
 
-const combineMoves = (square:Square) => (board: Board) => pipe(
+const wrapOrNoMoves = (square:Square) => flow(
+    mapOption((destination:Square) => [createRegularMove(square, destination)]),
+    getOrElse(() => [] as Move[])
+);
+
+const combineMoves = (square:Square) => (board: Board):Move[] => pipe(
     [
         getForwardSingleSquareFromBoard(square)(board),
         getForwardDoubleSquareFromBoard(square)(board)
     ],
-    map(getOrEmpty(square)),
-    append(pipe(
-        //@ts-expect-error
-        getTakingMoves(square)(board),
-        getOrElse(() => [])
-    )),
+    map(wrapOrNoMoves(square)),
+    append(getTakingMoves(square)(board)),
     flatten
 )
 
@@ -135,6 +123,6 @@ export const getLegalMoves = (game: Game, square:Square): Move[] => {
         getCurrentBoard(game),
         // @ts-expect-error
         mapRight(combineMoves(square)),
-        getOrElse(() => [])
+        getEitherOrElse(() => [])
     );
 }

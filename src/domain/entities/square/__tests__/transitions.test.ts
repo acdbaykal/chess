@@ -1,9 +1,9 @@
 import { flow, pipe } from 'fp-ts/lib/function';
 import {A, B, C, F, G, H, Square, _1, _2, _3, _4, _5, _6, _8} from '../Square';
 import { toLeft, toLower, toRight, toUpper } from '../transitions';
-import {getOrUndefined} from '../../../../lib/either';
+import {getOrUndefined} from '../../../../lib/option';
 import { createSquare } from '../constructors';
-import { isLeft } from 'fp-ts/lib/Either';
+import { isNone } from 'fp-ts/lib/Option';
 
 describe('domain/entities/square/transitions', () => {
     describe('toRight', () => {
@@ -26,7 +26,7 @@ describe('domain/entities/square/transitions', () => {
         it('fails when out of board', () => {
             const test = (sq: Square, amount: number) => {
                 const rightSq = toRight(amount)(sq);
-                expect(isLeft(rightSq)).toBe(true);
+                expect(isNone(rightSq)).toBe(true);
             }
 
             test(createSquare(H, _1), 1);
@@ -58,7 +58,7 @@ describe('domain/entities/square/transitions', () => {
         it('fails when out of board', () => {
             const test = (sq: Square, amount: number) => {
                 const leftSq = toLeft(amount)(sq);
-                expect(isLeft(leftSq)).toBe(true);
+                expect(isNone(leftSq)).toBe(true);
             }
 
             test(createSquare(A, _1), 1);
@@ -91,7 +91,7 @@ describe('domain/entities/square/transitions', () => {
         it('fails when out of board', () => {
             const test = (sq: Square, amount: number) => {
                 const upSq = toUpper(amount)(sq);
-                expect(isLeft(upSq)).toBe(true);
+                expect(isNone(upSq)).toBe(true);
             }
 
             test(createSquare(A, _1), 8);
@@ -124,7 +124,7 @@ describe('domain/entities/square/transitions', () => {
         it('fails when out of board', () => {
             const test = (sq: Square, amount: number) => {
                 const lowSq = toLower(amount)(sq);
-                expect(isLeft(lowSq)).toBe(true);
+                expect(isNone(lowSq)).toBe(true);
             }
 
             test(createSquare(A, _8), 8);

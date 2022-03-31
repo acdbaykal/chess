@@ -1,7 +1,7 @@
 import { Game } from "../../entities/game/Game";
-import { Move } from "../../entities/move/Move";
-import { getNumericAxis, toString } from "../../entities/square/getters";
-import { Square, _2, _4, _5, _7 } from "../../entities/square/Square";
+import { Move, RegularMove } from "../../entities/move/Move";
+import { getNumericAxis } from "../../entities/square/getters";
+import { Square, _1, _2, _4, _5, _7, _8 } from "../../entities/square/Square";
 import {toLeft, toLower, toRight, toUpper} from '../../entities/square/transitions';
 import { map as mapRight, getOrElse as getEitherOrElse} from 'fp-ts/Either';
 import { createRegularMove } from "../../entities/move/constructors";
@@ -15,6 +15,8 @@ import { flatten, map } from "fp-ts/lib/Array";
 import { append, filter } from "ramda";
 import { getOrFalse, getOrUndefined } from "../../../lib/option";
 import { sequenceT } from "fp-ts/lib/Apply";
+import { getMoveFrom, getMoveTo } from "../../entities/move/getters";
+import { mapIntoPromotions } from '../../entities/move/transition';
 
 const combineOption = sequenceT(Apply);
 
@@ -73,7 +75,7 @@ const getBlackSecondTakeDestination = flow(
     chainOption(toLower(1))
 );
 
-const getTakingMoves = (square: Square) => (board: Board):Move[] => {
+const getTakingMoves = (square: Square) => (board: Board):RegularMove[] => {
     return pipe(
         getPieceColorAt(board, square),
         mapOption(pieceColor => 
@@ -98,15 +100,27 @@ const getTakingMoves = (square: Square) => (board: Board):Move[] => {
                 ))
             )
         ),
-        getOrElse(() => [] as Move[])
+        getOrElse(() => [] as RegularMove[])
     );
 }
 
 
 const wrapOrNoMoves = (square:Square) => flow(
     mapOption((destination:Square) => [createRegularMove(square, destination)]),
-    getOrElse(() => [] as Move[])
+    getOrElse(() => [] as RegularMove[])
 );
+
+const promote = (board:Board) => (move:RegularMove):Move[] => pipe(
+    getPieceColorAt(board, getMoveFrom(move)),
+    mapOption(pieceColor => pieceColor === PieceColor.Black ? _1 : _8),
+    mapOption(lastRow => pipe(
+        getMoveTo(move),
+        getNumericAxis,
+        row => row === lastRow
+    )),
+    mapOption((isLastRow:boolean):Move[] => isLastRow ? mapIntoPromotions(move) as Move[] : [move]),
+    getOrElse(() => [] as Move[])
+)
 
 const combineMoves = (square:Square) => (board: Board):Move[] => pipe(
     [
@@ -115,7 +129,9 @@ const combineMoves = (square:Square) => (board: Board):Move[] => pipe(
     ],
     map(wrapOrNoMoves(square)),
     append(getTakingMoves(square)(board)),
-    flatten
+    flatten,
+    map(promote(board)),
+    flatten,
 )
 
 export const getLegalMoves = (game: Game, square:Square): Move[] => {

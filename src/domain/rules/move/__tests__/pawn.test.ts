@@ -1,14 +1,14 @@
-import { pipe } from 'fp-ts/lib/pipeable';
-import { not } from 'ramda';
+import { pipe } from 'fp-ts/lib/function';
 import { createBoardFromList } from '../../../entities/board/constructors';
 import { createGame } from '../../../entities/game/constructors';
-import { createRegularMove } from '../../../entities/move/constructors';
+import { createPromotion, createRegularMove } from '../../../entities/move/constructors';
 import { isSameMoveAs } from '../../../entities/move/getters';
 import { Move } from '../../../entities/move/Move';
+import { sortMoveList } from '../../../entities/move/transition';
 import { createPiece } from '../../../entities/piece/constructors';
 import { PieceColor, PieceType } from '../../../entities/piece/Piece';
 import { createSquare } from '../../../entities/square/constructors';
-import { A, B, C, D, E, F, Square, _2, _3, _4, _5, _6, _7 } from '../../../entities/square/Square';
+import { A, B, C, D, E, F, Square, _1, _2, _3, _4, _5, _6, _7, _8 } from '../../../entities/square/Square';
 import {getLegalMoves} from '../pawn';
 
 describe('domain/rule/move/pawn', () => {
@@ -243,6 +243,54 @@ describe('domain/rule/move/pawn', () => {
             ));
             expect(firstExpected).not.toBeDefined();
             expect(secondExpected).not.toBeDefined();
+        });
+    });
+
+    describe('promotion', () => {
+        it('promotes pawn when the pawn would arive at last row', () => {
+            const test = (pieceColor: PieceColor) => {
+                const row = pieceColor === PieceColor.Black ? _2 : _7;
+                const destinationRow = pieceColor === PieceColor.Black ? _1 : _8;
+                const oppositeColor = pieceColor === PieceColor.Black ? PieceColor.White : PieceColor.Black;
+                const start = createSquare(B, row);
+                const board = createBoardFromList([
+                    [start, createPiece(pieceColor, PieceType.Pawn)],
+                    [createSquare(A, destinationRow), createPiece(oppositeColor, PieceType.Knight)],
+                    [createSquare(C, destinationRow), createPiece(oppositeColor, PieceType.Knight)]
+                ]);
+
+                const game = createGame(board, []);
+                const legalMoves = pipe(
+                    getLegalMoves(game, start),
+                    sortMoveList
+                );
+
+                const expected = pipe(
+                    [
+                        createPromotion(start, createSquare(A, destinationRow), PieceType.Bishop),
+                        createPromotion(start, createSquare(C, destinationRow), PieceType.Bishop),
+                        createPromotion(start, createSquare(B, destinationRow), PieceType.Bishop),
+                        
+                        createPromotion(start, createSquare(A, destinationRow), PieceType.Knight),
+                        createPromotion(start, createSquare(C, destinationRow), PieceType.Knight),
+                        createPromotion(start, createSquare(B, destinationRow), PieceType.Knight),
+                        
+                        createPromotion(start, createSquare(A, destinationRow), PieceType.Queen),
+                        createPromotion(start, createSquare(C, destinationRow), PieceType.Queen),
+                        createPromotion(start, createSquare(B, destinationRow), PieceType.Queen),
+                        
+                        createPromotion(start, createSquare(A, destinationRow), PieceType.Rook),
+                        createPromotion(start, createSquare(C, destinationRow), PieceType.Rook),
+                        createPromotion(start, createSquare(B, destinationRow), PieceType.Rook)
+                    ],
+                    sortMoveList
+                );
+
+                expect(legalMoves).toEqual(expected);
+            };
+
+            test(PieceColor.Black);
+            test(PieceColor.White);
         });
     });
 });

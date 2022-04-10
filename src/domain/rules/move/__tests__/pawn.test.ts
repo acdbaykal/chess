@@ -5,6 +5,7 @@ import { createPromotion, createRegularMove } from '../../../entities/move/const
 import { isSameMoveAs } from '../../../entities/move/getters';
 import { Move } from '../../../entities/move/Move';
 import { sortMoveList } from '../../../entities/move/transition';
+import { EMPTY_MOVE_HISTORY } from '../../../entities/movehistory/constructors';
 import { createPiece } from '../../../entities/piece/constructors';
 import { PieceColor, PieceType } from '../../../entities/piece/Piece';
 import { createSquare } from '../../../entities/square/constructors';
@@ -19,7 +20,7 @@ describe('domain/rule/move/pawn', () => {
                     [start, createPiece(pieceColor, PieceType.Pawn)]
                 ]);
     
-                const game = createGame(board, []);
+                const game = createGame(board, EMPTY_MOVE_HISTORY);
                 const legalMoves:Move[] = getLegalMoves(game, start);
                 const expected = createRegularMove(
                     start,
@@ -42,7 +43,7 @@ describe('domain/rule/move/pawn', () => {
                 [destination, createPiece(PieceColor.Black, PieceType.Knight)]
             ]);
 
-            const game = createGame(board, []);
+            const game = createGame(board, EMPTY_MOVE_HISTORY);
             const legalMoves:Move[] = getLegalMoves(game, square);
             const nonlegal = createRegularMove(square, destination);
             const forwardMove = legalMoves.find(isSameMoveAs(nonlegal));
@@ -59,7 +60,7 @@ describe('domain/rule/move/pawn', () => {
                 const board = createBoardFromList([
                     [start, createPiece(pieceColor, PieceType.Pawn)]
                 ]);
-                const game = createGame(board, []);
+                const game = createGame(board, EMPTY_MOVE_HISTORY);
                 const destination = createSquare(B, destibationRow);
                 const legalMoves:Move[] = getLegalMoves(game, start);
                 const expected = createRegularMove(start, destination);
@@ -79,7 +80,7 @@ describe('domain/rule/move/pawn', () => {
                 const board = createBoardFromList([
                     [start, createPiece(pieceColor, PieceType.Pawn)]
                 ]);
-                const game = createGame(board, []);
+                const game = createGame(board, EMPTY_MOVE_HISTORY);
                 const destination = createSquare(B, destibationRow);
                 const legalMoves:Move[] = getLegalMoves(game, start);
                 const nonlegal = createRegularMove(start, destination);
@@ -101,7 +102,7 @@ describe('domain/rule/move/pawn', () => {
                     [start, createPiece(pieceColor, PieceType.Pawn)],
                     [destination, createPiece(PieceColor.White, PieceType.Bishop)]
                 ]);
-                const game = createGame(board, []);
+                const game = createGame(board, EMPTY_MOVE_HISTORY);
 
                 const legalMoves:Move[] = getLegalMoves(game, start);
                 const nonlegal = createRegularMove(start, destination);
@@ -126,7 +127,7 @@ describe('domain/rule/move/pawn', () => {
                     [start, createPiece(pieceColor, PieceType.Pawn)],
                     [inbetweenSquare, createPiece(PieceColor.White, PieceType.Bishop)]
                 ]);
-                const game = createGame(board, []);
+                const game = createGame(board, EMPTY_MOVE_HISTORY);
 
                 const legalMoves:Move[] = getLegalMoves(game, start);
                 const nonlegal = createRegularMove(start, destination);
@@ -148,7 +149,7 @@ describe('domain/rule/move/pawn', () => {
                     [firstTake, createPiece(PieceColor.Black, PieceType.Pawn)],
                     [secondTake, createPiece(PieceColor.Black, PieceType.Pawn)]
                 ]);
-                const game = createGame(board, []);
+                const game = createGame(board, EMPTY_MOVE_HISTORY);
     
                 const legalMoves = getLegalMoves(game, start);
                 const firstExpected = legalMoves.find(isSameMoveAs(
@@ -181,7 +182,7 @@ describe('domain/rule/move/pawn', () => {
                     [firstTake, createPiece(PieceColor.White, PieceType.Pawn)],
                     [secondTake, createPiece(PieceColor.White, PieceType.Pawn)]
                 ]);
-                const game = createGame(board, []);
+                const game = createGame(board, EMPTY_MOVE_HISTORY);
     
                 const legalMoves = getLegalMoves(game, start);
                 const firstExpected = legalMoves.find(isSameMoveAs(
@@ -214,7 +215,7 @@ describe('domain/rule/move/pawn', () => {
                 [createSquare(D, _4), createPiece(PieceColor.White, PieceType.Pawn)],
                 [createSquare(F, _4), createPiece(PieceColor.Black, PieceType.Pawn)]
             ]);
-            const game = createGame(board, []);
+            const game = createGame(board, EMPTY_MOVE_HISTORY);
 
             const legalMoves = getLegalMoves(game, start);
             const firstExpected = legalMoves.find(isSameMoveAs(
@@ -232,7 +233,7 @@ describe('domain/rule/move/pawn', () => {
             const board = createBoardFromList([
                 [start, createPiece(PieceColor.Black, PieceType.Pawn)]
             ]);
-            const game = createGame(board, []);
+            const game = createGame(board, EMPTY_MOVE_HISTORY);
 
             const legalMoves = getLegalMoves(game, start);
             const firstExpected = legalMoves.find(isSameMoveAs(
@@ -259,7 +260,7 @@ describe('domain/rule/move/pawn', () => {
                     [createSquare(C, destinationRow), createPiece(oppositeColor, PieceType.Knight)]
                 ]);
 
-                const game = createGame(board, []);
+                const game = createGame(board, EMPTY_MOVE_HISTORY);
                 const legalMoves = pipe(
                     getLegalMoves(game, start),
                     sortMoveList

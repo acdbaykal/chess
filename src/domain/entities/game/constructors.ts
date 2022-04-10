@@ -1,7 +1,7 @@
 import { Board } from "../board/Board";
-import { Move } from "../move/Move";
+import { MoveHistory } from "../movehistory/MoveHistory";
 
-export const createGame = (initialBoard: Board, moves: Move[]) => ({
+export const createGame = (initialBoard: Board, moveHistory: MoveHistory) => ({
     initialBoard,
-    moves
+    moveHistory
 });

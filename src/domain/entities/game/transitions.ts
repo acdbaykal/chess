@@ -7,6 +7,6 @@ export const addMove = (game:Game, move:Move): Game => {
     const movesList = getMoves(game);
     return {
         ...game,
-        moves: append(move, movesList)
+        moveHistory: append(move, movesList)
     };
 }

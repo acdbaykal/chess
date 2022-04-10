@@ -7,7 +7,7 @@ import { PieceColor, PieceType } from "../../piece/Piece";
 import { createSquare } from "../../square/constructors";
 import { A, B, E, H, _2, _3, _7, _8 } from "../../square/Square";
 import { createBoardFromList } from "../constructors";
-import { applyMove, applyMoveList, removePiece, setPiece } from "../transitions";
+import { applyMove, applyMoveHistory, removePiece, setPiece } from "../transitions";
 
 describe('domain/entities/board/transitions', () => {
     describe('setPice', () => {
@@ -94,7 +94,7 @@ describe('domain/entities/board/transitions', () => {
                 createPromotion(createSquare(E, _7), createSquare(E, _8), PieceType.Queen)
             ];
 
-            const derivedBoard = applyMoveList(originalBoard, moveList);
+            const derivedBoard = applyMoveHistory(originalBoard, moveList);
             const expected = pipe(
                 createBoardFromList([
                     [createSquare(H, _8), createPiece(PieceColor.Black, PieceType.Bishop)],
@@ -118,7 +118,7 @@ describe('domain/entities/board/transitions', () => {
                 createRegularMove(createSquare(B, _3), createSquare(H, _8))
             ];
 
-            const fail = applyMoveList(originalBoard, moveList);
+            const fail = applyMoveHistory(originalBoard, moveList);
 
             expect(isLeft(fail)).toBe(true);
         });

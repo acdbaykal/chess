@@ -10,6 +10,7 @@ import { Square } from "../square/Square";
 import { Piece } from "../piece/Piece";
 import { createPiece } from "../piece/constructors";
 import { getPieceColor } from "../piece/getters";
+import { MoveHistory } from "../movehistory/MoveHistory";
 
 export const removePiece = (board: Board, square:Square): Board => 
     omit([toString(square)], board);
@@ -42,7 +43,7 @@ export const applyMove = (board: Board, move: Move): E.Either<Error, Board> => {
 
 const chainApplyMove = (move: Move) => E.chain((b: Board) => applyMove(b, move));
 
-export const applyMoveList = (board: Board, moveList: Move[]):E.Either<Error, Board> =>
+export const applyMoveHistory = (board: Board, moveList: MoveHistory):E.Either<Error, Board> =>
    moveList.reduce((currentBoard, move) => pipe(
        currentBoard,
        chainApplyMove(move)

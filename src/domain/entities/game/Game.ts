@@ -1,8 +1,7 @@
 import { Board } from "../board/Board";
-import { Move } from "../move/Move";
+import { MoveHistory } from "../movehistory/MoveHistory";
 
 export interface Game {
     initialBoard: Board,
-    moves: Move[]
-
+    moveHistory: MoveHistory
 }

@@ -1,10 +1,18 @@
 import { Either, left, right } from "fp-ts/lib/Either";
-import { Coordinate, Square } from "./Square";
+import { A, Coordinate, Square, _1 } from "./Square";
+import {Record} from 'immutable';
 
-export const createSquare = (lettAx: Coordinate, numAx:Coordinate): Square => ({
-    letterAxis: lettAx,
-    numericAxis: numAx
-});
+const SquareFactory = Record<Square>({
+    letterAxis: A,
+    numericAxis: _1
+})
+
+
+export const createSquare = (lettAx: Coordinate, numAx:Coordinate): Square => 
+    SquareFactory({
+        letterAxis: lettAx,
+        numericAxis: numAx
+    });
 
 export const fromString = (str:String): Either<Error, Square> => {
     const split = str.split('/').map(Number) as Coordinate[];

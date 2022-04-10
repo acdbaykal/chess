@@ -1,23 +1,22 @@
 import { A, B, C, Square, _1, _2, _3 } from "../../../entities/square/Square";
-import { createSquare, fromString } from "../../../entities/square/constructors";
+import { createSquare } from "../../../entities/square/constructors";
 import { createBoardFromList } from "../../../entities/board/constructors";
 import {createGame} from '../../../entities/game/constructors';
 import { Piece, PieceColor, PieceType } from "../../../entities/piece/Piece";
 import {createPiece} from '../../../entities/piece/constructors';
 import {getLegalMoves} from '../king';
-import {Move} from '../../../entities/move/Move';
 import { pipe } from "fp-ts/lib/function";
 import { sortMoveList } from "../../../entities/move/transition";
 import { createRegularMove } from "../../../entities/move/constructors";
 import { map as mapList } from 'fp-ts/Array';
 import {Board} from '../../../entities/board/Board';
 import {map as mapEither, right} from 'fp-ts/Either';
+import { EMPTY_MOVE_HISTORY } from "../../../entities/movehistory/constructors";
 
 describe('domain/rules/moves/king', () => {
     describe('getLegalMoves', () => {
         const testSimpleMoves = (board: Board, kingPosition: Square, destinations: Square[]) => {
-            const moves: Move[] = [];
-            const game = createGame(board, moves);
+            const game = createGame(board, EMPTY_MOVE_HISTORY);
             const legalMoves = pipe(
                 getLegalMoves(game, kingPosition),
                 mapEither(sortMoveList)

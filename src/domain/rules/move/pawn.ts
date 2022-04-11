@@ -1,22 +1,26 @@
 import { Game } from "../../entities/game/Game";
 import { Move, RegularMove } from "../../entities/move/Move";
-import { getNumericAxis } from "../../entities/square/getters";
-import { Square, _1, _2, _4, _5, _7, _8 } from "../../entities/square/Square";
-import {toLeft, toLower, toRight, toUpper} from '../../entities/square/transitions';
+import { getNumericAxis, squareEquals } from "../../entities/square/getters";
+import { Coordinate, Square, _1, _2, _3, _4, _5, _6, _7, _8 } from "../../entities/square/Square";
+import {toBottomLeft, toBottomRight, toLeft, toLower, toRight, toUpLeft, toUpper, toUpRight} from '../../entities/square/transitions';
 import { map as mapRight, getOrElse as getEitherOrElse} from 'fp-ts/Either';
 import { createRegularMove } from "../../entities/move/constructors";
-import { PieceColor } from "../../entities/piece/Piece";
-import { getCurrentBoard } from "../../entities/game/getters";
-import { getPieceColorAt, isSquareOccupied } from "../../entities/board/getters";
+import { PieceColor, PieceType } from "../../entities/piece/Piece";
+import { getCurrentBoard, getMovesHistory } from "../../entities/game/getters";
+import { getPieceColorAt, isSquareOccupied, isSquareOccupiedByPiece } from "../../entities/board/getters";
 import { flow, pipe } from "fp-ts/function";
-import { Apply, chain as chainOption, map as mapOption, filter as filterOption, getOrElse} from "fp-ts/lib/Option";
+import { Apply, chain as chainOption, Do as doOption, map as mapOption, filter as filterOption, getOrElse, Option, isSome, bind} from "fp-ts/lib/Option";
 import { Board } from "../../entities/board/Board";
-import { flatten, map } from "fp-ts/lib/Array";
-import { append, filter } from "ramda";
+import { filter, flatten, map } from "fp-ts/lib/Array";
+import { append } from "ramda";
 import { getOrFalse, getOrUndefined } from "../../../lib/option";
 import { sequenceT } from "fp-ts/lib/Apply";
-import { getMoveFrom, getMoveTo } from "../../entities/move/getters";
+import { getMoveFrom, getMoveFromNumericCoord, getMoveTo, getMoveToNumericCoord } from "../../entities/move/getters";
 import { mapIntoPromotions } from '../../entities/move/transition';
+import { createPiece } from "../../entities/piece/constructors";
+import { reversePieceColor } from "../../entities/piece/transition";
+import { MoveHistory } from "../../entities/movehistory/MoveHistory";
+import { getLastMove } from "../../entities/movehistory/getters";
 
 const combineOption = sequenceT(Apply);
 
@@ -120,23 +124,94 @@ const promote = (board:Board) => (move:RegularMove):Move[] => pipe(
     )),
     mapOption((isLastRow:boolean):Move[] => isLastRow ? mapIntoPromotions(move) as Move[] : [move]),
     getOrElse(() => [] as Move[])
-)
+);
 
-const combineMoves = (square:Square) => (board: Board):Move[] => pipe(
-    [
-        getForwardSingleSquareFromBoard(square)(board),
-        getForwardDoubleSquareFromBoard(square)(board)
-    ],
-    map(wrapOrNoMoves(square)),
-    append(getTakingMoves(square)(board)),
-    flatten,
-    map(promote(board)),
-    flatten,
-)
+const isDoubleMove = (board: Board) => (move:Move) => 
+        pipe(
+            getMoveTo(move),
+            sqr => getPieceColorAt(board, sqr),
+            mapOption((color: PieceColor): [Coordinate, Coordinate] => color === PieceColor.Black ? [_7, _5] : [_2, _4]),
+            mapOption(
+                ([startRow, endRow]: [Coordinate, Coordinate] ) => 
+                    getMoveFromNumericCoord(move) === startRow && 
+                    getMoveToNumericCoord(move) === endRow
+            ),
+            getOrFalse
+        )
+
+interface LREnopassantDeps {
+    toSide: (sq: Square) => Option<Square>,
+    takeWhenWhite: (sq: Square) => Option<Square>,
+    takeWhenBlack: (sq: Square) => Option<Square>,
+};
+
+const lrEnPassant =  (deps: LREnopassantDeps) => (square: Square) => (board:Board, moveHistory: MoveHistory):Option<Move> =>{
+    const {toSide, takeWhenWhite, takeWhenBlack} = deps;
+
+    return pipe(
+        doOption,
+        bind('lastMove', () => getLastMove(moveHistory)),
+        filterOption(({lastMove}) => isDoubleMove(board)(lastMove)),
+        bind('sideSqr', () => toSide(square)),
+        filterOption(({sideSqr, lastMove}) => pipe(
+            getMoveTo(lastMove),
+            squareEquals(sideSqr)
+        )),
+        chainOption(({sideSqr}) => pipe(
+            getPieceColorAt(board, square),
+            filterOption(flow(
+                color => color === PieceColor.Black ? _4 : _5,
+                enPassantRow => getNumericAxis(square) === enPassantRow
+            )),
+            filterOption(flow(
+                reversePieceColor,
+                reverseColor => createPiece(reverseColor, PieceType.Pawn),
+                targetPiece => isSquareOccupiedByPiece(targetPiece)(board, sideSqr)
+            )),
+            chainOption(color => color === PieceColor.White ? takeWhenWhite(square) : takeWhenBlack(square))
+        )),
+        mapOption(destination => createRegularMove(square, destination))
+    );
+}
+    
+const leftEnPassant = lrEnPassant({
+    toSide: toLeft(1),
+    takeWhenBlack: toBottomLeft,
+    takeWhenWhite: toUpLeft
+});
+
+const rightEnPassant = lrEnPassant({
+    toSide: toRight(1),
+    takeWhenBlack: toBottomRight,
+    takeWhenWhite: toUpRight
+});
+
+const enPassant = (square: Square) => (board:Board, moveHistory:MoveHistory):Move[] => pipe(
+    [leftEnPassant(square)(board, moveHistory), rightEnPassant(square)(board, moveHistory)],
+    filter(isSome),
+    map(wrappedMove => getOrUndefined(wrappedMove) as Move)
+);
+
+const combineMoves = (square:Square) => (boardAndHistory: [Board, MoveHistory]):Move[] => {
+    const [board, moveHistory] = boardAndHistory;
+    return pipe(
+        [
+            getForwardSingleSquareFromBoard(square)(board),
+            getForwardDoubleSquareFromBoard(square)(board)
+        ],
+        map(wrapOrNoMoves(square)),
+        append(getTakingMoves(square)(board)),
+        append(enPassant(square)(board, moveHistory)),
+        flatten,
+        map(promote(board)),
+        flatten,
+    )
+}
 
 export const getLegalMoves = (game: Game, square:Square): Move[] => {
     return pipe(
         getCurrentBoard(game),
+        mapRight(board => [board, getMovesHistory(game)]),
         // @ts-expect-error
         mapRight(combineMoves(square)),
         getEitherOrElse(() => [])

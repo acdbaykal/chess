@@ -11,7 +11,7 @@ import { Board } from "../board/Board";
 import { Piece } from "../piece/Piece";
 
 export const getInitialBoard = (game: Game) => game.initialBoard;
-export const getMoves = (game:Game) => game.moveHistory;
+export const getMovesHistory = (game:Game) => game.moveHistory;
 
 export const hasPieceMoved = (game: Game, startingPosition: Square): E.Either<Error, boolean> => {
     const hasPiece = pipe(
@@ -24,7 +24,7 @@ export const hasPieceMoved = (game: Game, startingPosition: Square): E.Either<Er
     }
     
     return pipe(
-        getMoves(game),
+        getMovesHistory(game),
         any(flow(
             getMoveFrom,
             squareEquals(startingPosition)
@@ -35,7 +35,7 @@ export const hasPieceMoved = (game: Game, startingPosition: Square): E.Either<Er
 
 export const getCurrentBoard = (game: Game):E.Either<Error, Board> =>{
     const board = getInitialBoard(game);
-    const moves = getMoves(game);
+    const moves = getMovesHistory(game);
     return applyMoveHistory(board, moves);
 }
 

@@ -14,6 +14,7 @@ import { getPieceColor } from "../piece/getters";
 import { MoveHistory } from "../movehistory/MoveHistory";
 import { createSquare } from "../square/constructors";
 import { pieceToEmoji } from "../piece/transition";
+import { moveToString } from "../move/transition";
 
 export const removePiece = (board: Board, square:Square): Board => 
     omit([toString(square)], board);
@@ -28,7 +29,7 @@ export const applyMove = (board: Board, move: Move): Eth.Either<Error, Board> =>
 
     return pipe(
         getPieceAt(board, from),
-        Eth.fromOption(() => new Error('Applying move is not possible: No piece avalable at given square')),
+        Eth.fromOption(() => new Error(`Applying move ${moveToString(move)} is not possible: No piece avalable at given start`)),
         Eth.map(piece => {
             const to = getMoveTo(move)
 

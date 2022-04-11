@@ -1,13 +1,12 @@
 import { Board } from "./Board";
 import { A, Square, _1 } from "../square/Square";
-import {Piece, PieceColor} from '../piece/Piece';
+import {Piece, PieceColor, PieceType} from '../piece/Piece';
 import * as SqGetters  from '../square/getters'
 import * as O from 'fp-ts/Option';
 import * as E from 'fp-ts/Either';
 import { flow } from "fp-ts/lib/function";
-import { equalsToPiece, getPieceColor } from "../piece/getters";
+import { equalsToPiece, getPieceColor, getPieceType } from "../piece/getters";
 import { createSquare, fromString } from "../square/constructors";
-import {equals} from 'ramda';
 import {getOrFalse} from "../../../lib/option";
 
 export const getPieceAt = (board: Board, square: Square): O.Option<Piece> => {
@@ -23,6 +22,19 @@ export const getPieceColorAt = flow(
 export const isSquareOccupied = flow(
     getPieceAt,
     O.isSome
+);
+
+export const isSquareOccupiedByPieceType = (type: PieceType) => flow(
+    getPieceAt,
+    O.map(getPieceType),
+    O.map(_pt => _pt === type),
+    getOrFalse
+);
+
+export const isSquareOccupiedByPiece = (piece: Piece) => flow(
+    getPieceAt,
+    O.map(equalsToPiece(piece)),
+    getOrFalse
 );
 
 export const isOccupiedByColor = (color:PieceColor) => flow(

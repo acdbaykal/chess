@@ -1,8 +1,8 @@
 import { sort } from "ramda";
 import { PieceType } from "../piece/Piece";
-import { getLetterAxis, getNumericAxis, isLeftOf, isUpOf } from "../square/getters";
+import { getLetterAxis, getNumericAxis, isLeftOf, isUpOf, toString } from "../square/getters";
 import { createPromotion } from "./constructors";
-import { getMoveTo, getPromotionPieceType, isPromotionMove } from "./getters";
+import { getMoveFrom, getMoveTo, getPromotionPieceType, isPromotionMove } from "./getters";
 import { Move, Promotion, RegularMove } from "./Move";
 import {PromotionPieceType} from '../move/Move';
 
@@ -57,3 +57,9 @@ export const mapIntoPromotions = (base: RegularMove): Promotion[] =>
         PieceType.Queen,
         PieceType.Rook
     ].map(pieceType => createPromotion(base.from, base.to, pieceType));
+
+
+export const moveToString = (move:Move): string =>
+   [getMoveFrom(move), getMoveTo(move)]
+    .map(toString)
+    .join(' ﹣> ');

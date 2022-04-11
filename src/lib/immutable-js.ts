@@ -5,7 +5,11 @@ const createListAdapter = <T>(list: List<T>): ReadonlyArray<T> =>
     // @ts-expect-error
     new Proxy(list, {
         get(target, prop: keyof ReadonlyArray<T>) {
-            if(prop === 'length'){
+
+            const index = typeof prop === 'number' ?  prop : parseInt(prop);
+            if(!isNaN(index)){
+                return target.get(index);
+            } else if(prop === 'length'){
                 return target.size
             } else if (prop === 'flat') {
                 return target.flatten

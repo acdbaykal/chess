@@ -41,6 +41,6 @@ export const
     _8 = NumericCoordinate._8;
 
 export interface Square {
-    letterAxis: AlphabeticCoordinate,
-    numericAxis: NumericCoordinate
+    file: AlphabeticCoordinate,
+    rank: NumericCoordinate
 }

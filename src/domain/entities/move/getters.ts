@@ -1,7 +1,7 @@
 import { flow } from "fp-ts/lib/function";
 import { is } from "ramda";
 import { PieceType } from "../piece/Piece";
-import { getNumericAxis, squareEquals } from "../square/getters";
+import { getRank, squareEquals } from "../square/getters";
 import { Move, MoveType, Promotion, PromotionPieceType, RegularMove } from "./Move";
 
 export const getMoveFrom = (move: Move) => move.from;
@@ -21,11 +21,11 @@ export const getPromotionPieceType = (move: Promotion): PromotionPieceType =>
 
  export const getMoveFromNumericCoord = flow(
      getMoveFrom,
-     getNumericAxis
+     getRank
  );
 
  export const getMoveToNumericCoord = flow(
     getMoveTo,
-    getNumericAxis
+    getRank
 );
     

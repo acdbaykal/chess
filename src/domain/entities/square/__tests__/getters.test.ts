@@ -1,20 +1,20 @@
 import { createSquare } from "../constructors";
-import { getLetterAxis, getNumericAxis, isLeftOf, isRightOf, squareEquals } from "../getters";
+import { getFile, getRank, isLeftOf, isRightOf, squareEquals } from "../getters";
 import { A, B, C, Square, _1, _2 } from "../Square";
 
 describe('domain/entities/square', () => {
-    describe('getLetterAxis', () => {
-        it('get the letter axis', () => {
+    describe('getFile', () => {
+        it('get the alphabetic coordinate', () => {
             const square = createSquare(B, _2);
-            const axis = getLetterAxis(square);
+            const axis = getFile(square);
             expect(axis).toBe(B);
         });
     });
 
-    describe('getNumericAxis', () =>{
-        it('gets the numeric axis', () => {
+    describe('getRank', () =>{
+        it('gets the numeric coordinate', () => {
             const square = createSquare(B, _2);
-            const axis = getNumericAxis(square);
+            const axis = getRank(square);
             expect(axis).toBe(_2);
         });
     });

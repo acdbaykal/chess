@@ -1,6 +1,6 @@
 import { sort } from "ramda";
 import { PieceType } from "../piece/Piece";
-import { getLetterAxis, getNumericAxis, isLeftOf, isUpOf, toString } from "../square/getters";
+import { getFile, getRank, isLeftOf, isUpOf, toString } from "../square/getters";
 import { createPromotion } from "./constructors";
 import { getMoveFrom, getMoveTo, getPromotionPieceType, isPromotionMove } from "./getters";
 import { Move, Promotion, RegularMove } from "./Move";
@@ -22,8 +22,8 @@ const promotionToValue = (promotion:PromotionPieceType) => {
 const sortFn = (move1: Move, move2: Move):number => {
     const to1 = getMoveTo(move1);
     const to2 = getMoveTo(move2);
-    const sameLetter = getLetterAxis(to1) === getLetterAxis(to2);
-    const sameNum = getNumericAxis(to1) === getNumericAxis(to2);
+    const sameLetter = getFile(to1) === getFile(to2);
+    const sameNum = getRank(to1) === getRank(to2);
     const firstIsPromotion = isPromotionMove(move1);
     const secondIsPromotion = isPromotionMove(move2);
 

@@ -1,7 +1,7 @@
 import { Game } from "../../entities/game/Game";
 import { Move, RegularMove } from "../../entities/move/Move";
 import { getNumericAxis, squareEquals } from "../../entities/square/getters";
-import { Coordinate, Square, _1, _2, _3, _4, _5, _6, _7, _8 } from "../../entities/square/Square";
+import { NumericCoordinate, Square, _1, _2, _3, _4, _5, _6, _7, _8 } from "../../entities/square/Square";
 import {toBottomLeft, toBottomRight, toLeft, toLower, toRight, toUpLeft, toUpper, toUpRight} from '../../entities/square/transitions';
 import { map as mapRight, getOrElse as getEitherOrElse} from 'fp-ts/Either';
 import { createRegularMove } from "../../entities/move/constructors";
@@ -130,9 +130,9 @@ const isDoubleMove = (board: Board) => (move:Move) =>
         pipe(
             getMoveTo(move),
             sqr => getPieceColorAt(board, sqr),
-            mapOption((color: PieceColor): [Coordinate, Coordinate] => color === PieceColor.Black ? [_7, _5] : [_2, _4]),
+            mapOption((color: PieceColor): [NumericCoordinate, NumericCoordinate] => color === PieceColor.Black ? [_7, _5] : [_2, _4]),
             mapOption(
-                ([startRow, endRow]: [Coordinate, Coordinate] ) => 
+                ([startRow, endRow]: [NumericCoordinate, NumericCoordinate] ) => 
                     getMoveFromNumericCoord(move) === startRow && 
                     getMoveToNumericCoord(move) === endRow
             ),

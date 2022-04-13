@@ -1,11 +1,11 @@
-import { _1, _2, _3, _4, _5, _6, _7, _8, A, B, C, D, E, F, G, H, Coordinate, Square } from "./Square";
+import { _1, _2, _3, _4, _5, _6, _7, _8, A, B, C, D, E, F, G, H, AlphabeticCoordinate, NumericCoordinate, Square } from "./Square";
 
 
 export const getLetterAxis = (s:Square) => s.letterAxis;
 export const getNumericAxis = (s:Square) => s.numericAxis;
 
 
-const getLetterString = (letterAxis: Coordinate): string => {
+const getLetterString = (letterAxis: AlphabeticCoordinate): string => {
     switch(letterAxis) {
         case A: return 'A'
         case B: return 'B'
@@ -19,7 +19,7 @@ const getLetterString = (letterAxis: Coordinate): string => {
     }
 };
 
-const getNumericString = (numericAxis: Coordinate): string => {
+const getNumericString = (numericAxis: NumericCoordinate): string => {
     switch(numericAxis) {
         case _1: return '1'
         case _2: return '2'

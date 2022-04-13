@@ -1,6 +1,6 @@
 import { Game } from "../../entities/game/Game";
 import { Move, RegularMove } from "../../entities/move/Move";
-import { getNumericAxis, squareEquals } from "../../entities/square/getters";
+import { getRank, squareEquals } from "../../entities/square/getters";
 import { NumericCoordinate, Square, _1, _2, _3, _4, _5, _6, _7, _8 } from "../../entities/square/Square";
 import {toBottomLeft, toBottomRight, toLeft, toLower, toRight, toUpLeft, toUpper, toUpRight} from '../../entities/square/transitions';
 import { map as mapRight, getOrElse as getEitherOrElse} from 'fp-ts/Either';
@@ -24,7 +24,7 @@ import { getLastMove } from "../../entities/movehistory/getters";
 
 const combineOption = sequenceT(Apply);
 
-const getForwardSquare = (amount:number) => (pieceColor: PieceColor) =>
+const getForwardSquare = (amount: 1 | 2) => (pieceColor: PieceColor) =>
     pieceColor === PieceColor.Black ? toLower(amount) : toUpper(amount);
 
 
@@ -32,8 +32,8 @@ const getSingleForwardSquare = getForwardSquare(1);
 const getDoubleForwardSquare = getForwardSquare(2);
 
 const isAtHome = (square: Square) => (pieceColor: PieceColor): boolean =>
-    (pieceColor === PieceColor.Black && getNumericAxis(square) === _7) ||
-    (pieceColor === PieceColor.White && getNumericAxis(square) === _2)
+    (pieceColor === PieceColor.Black && getRank(square) === _7) ||
+    (pieceColor === PieceColor.White && getRank(square) === _2)
 
 const getForwardSingleSquareFromBoard = (square: Square) => (board:Board) =>
     pipe(
@@ -119,7 +119,7 @@ const promote = (board:Board) => (move:RegularMove):Move[] => pipe(
     mapOption(pieceColor => pieceColor === PieceColor.Black ? _1 : _8),
     mapOption(lastRow => pipe(
         getMoveTo(move),
-        getNumericAxis,
+        getRank,
         row => row === lastRow
     )),
     mapOption((isLastRow:boolean):Move[] => isLastRow ? mapIntoPromotions(move) as Move[] : [move]),
@@ -161,7 +161,7 @@ const lrEnPassant =  (deps: LREnopassantDeps) => (square: Square) => (board:Boar
             getPieceColorAt(board, square),
             filterOption(flow(
                 color => color === PieceColor.Black ? _4 : _5,
-                enPassantRow => getNumericAxis(square) === enPassantRow
+                enPassantRow => getRank(square) === enPassantRow
             )),
             filterOption(flow(
                 reversePieceColor,

@@ -37,14 +37,18 @@ export const toString = (s: Square) => `${getLetterString(s.file)}${getNumericSt
 export const squareEquals = (s1: Square) => (s2: Square) =>
     getFile(s1) ===  getFile(s2) && getRank(s1) === getRank(s2);
 
+
+const numericCoordOrder = [_1, _2, _3, _4, _5, _6, _7, _8];   
+const alphabeticCoordOrder = [A, B, C, D, E, F, G];
 /** is a square positionad at the right of another from white's perspactive  */
 export const isRightOf = (reference: Square) => (subject: Square): boolean => 
-    getFile(reference) < getFile(subject);
+    alphabeticCoordOrder.indexOf(getFile(reference)) < alphabeticCoordOrder.indexOf(getFile(subject));
 
 /** is a square positionad at the left of another from white's perspective  */
 export const isLeftOf = (reference: Square) => (subject: Square): boolean => 
-    getFile(reference) > getFile(subject);
+    alphabeticCoordOrder.indexOf(getFile(reference)) > alphabeticCoordOrder.indexOf(getFile(subject));
+
 
 /** is a squre posined futher away from the white player then the reference*/
 export const isUpOf = (reference: Square) => (subject: Square): boolean => 
-    getRank(reference) < getRank(subject);
+    numericCoordOrder.indexOf(getRank(reference)) < numericCoordOrder.indexOf(getRank(subject));

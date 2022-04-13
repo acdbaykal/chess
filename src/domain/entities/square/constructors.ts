@@ -6,15 +6,15 @@ import { combineEither } from "../../../lib/either";
 import { map } from "fp-ts/lib/Separated";
 
 const SquareFactory = Record<Square>({
-    letterAxis: A,
-    numericAxis: _1
+    file: A,
+    rank: _1
 })
 
 
 export const createSquare = (lettAx: AlphabeticCoordinate, numAx:NumericCoordinate): Square => 
     SquareFactory({
-        letterAxis: lettAx,
-        numericAxis: numAx
+        file: lettAx,
+        rank: numAx
     });
 
 

@@ -1,5 +1,5 @@
 import { Either, left, right, map as mapEither } from "fp-ts/lib/Either";
-import { _1, _2, _3, _4, _5, _6, _7, _8, A, B, C, D, E, F, G, H, Coordinate, Square } from "./Square";
+import { _1, _2, _3, _4, _5, _6, _7, _8, A, B, C, D, E, F, G, H, AlphabeticCoordinate, NumericCoordinate, Square } from "./Square";
 import {Record} from 'immutable';
 import { pipe } from "fp-ts/lib/function";
 import { combineEither } from "../../../lib/either";
@@ -11,7 +11,7 @@ const SquareFactory = Record<Square>({
 })
 
 
-export const createSquare = (lettAx: Coordinate, numAx:Coordinate): Square => 
+export const createSquare = (lettAx: AlphabeticCoordinate, numAx:NumericCoordinate): Square => 
     SquareFactory({
         letterAxis: lettAx,
         numericAxis: numAx
@@ -19,7 +19,7 @@ export const createSquare = (lettAx: Coordinate, numAx:Coordinate): Square =>
 
 
 
-const getLetterAxis = (str: String):Either<Error, Coordinate> => {
+const getLetterAxis = (str: String):Either<Error, AlphabeticCoordinate> => {
     switch(str) {
         case 'A': return right(A)
         case 'B': return right(B)
@@ -33,7 +33,7 @@ const getLetterAxis = (str: String):Either<Error, Coordinate> => {
     }
 };
 
-const getNumericAxis = (str: String):Either<Error, Coordinate> => {
+const getNumericAxis = (str: String):Either<Error, NumericCoordinate> => {
     switch(str) {
         case '1': return right(_1)
         case '2': return right(_2)

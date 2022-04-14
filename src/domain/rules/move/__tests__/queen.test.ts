@@ -1,6 +1,4 @@
 import { pipe } from "fp-ts/lib/function";
-import { showString } from "fp-ts/lib/Show";
-import { createFactory } from "react";
 import { createBoardFromList } from "../../../entities/board/constructors";
 import { createMoveList } from "../../../entities/move/constructors";
 import { sortMoveList } from "../../../entities/move/transition";
@@ -185,7 +183,7 @@ describe('domain/rules/moves/queen', () => {
             test(PieceColor.Black);
         });
 
-        it('excludes the square at wich the oopsite colored king stands', () => {
+        it('includes the square at wich the oopsite colored king stands', () => {
             const test = (color: PieceColor) => {
                 const square = createSquare(D, _5);
                 const oppositeColor = reversePieceColor(color);
@@ -200,6 +198,7 @@ describe('domain/rules/moves/queen', () => {
                 const expected = pipe(
                     [
                         //vert
+                        createSquare(D, _7),
                         createSquare(D, _6),
                         createSquare(D, _4),
                         createSquare(D, _3),

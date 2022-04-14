@@ -1,6 +1,8 @@
+
 import { flow, pipe } from "fp-ts/lib/function";
-import { chain as chainOption , Option, map as mapOption, none, some } from "fp-ts/lib/Option";
-import { cond, equals, range } from "ramda";
+import { chain as chainOption , Option, map as mapOption, none, some, isSome } from "fp-ts/lib/Option";
+import { cond, equals, filter, range, map } from "ramda";
+import { getOrUndefined } from "../../../lib/option";
 import { createSquare } from "./constructors";
 import { getFile, getRank } from "./getters";
 import { A, AlphabeticCoordinate, NumericCoordinate, H, Square, _1, _8, B, C, D, E, F, G, _2, _3, _4, _5, _6, _7 } from "./Square";
@@ -94,3 +96,22 @@ export const toBottomLeft = flow(
     toSingleLower,
     chainOption(toSingleLeft)
 );
+
+const NeighborFunctions = [
+    toSingleLeft,
+    toSingleRight,
+    toSingleUpper,
+    toSingleLower,
+    toUpRight,
+    toUpLeft,
+    toBottomRight,
+    toBottomLeft
+];
+
+export const calcNeighbors = (square: Square): Square[] => 
+    pipe(
+        NeighborFunctions,
+        map(fn => fn(square)),
+        filter((sq:Option<Square>):boolean => isSome(sq)),
+        map((sq: Option<Square>):Square =>  getOrUndefined(sq) as Square),
+    );

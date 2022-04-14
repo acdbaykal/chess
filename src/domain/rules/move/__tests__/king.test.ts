@@ -53,14 +53,21 @@ describe('domain/rules/moves/king', () => {
 
 
         describe('getLegalMoves', () => {
-            it('moves a square left,right, back or forward', () => {
+            it('moves to neigboring squares', () => {
                 const kingPosition = createSquare(B, _2);
                 
                 const destinations = [
+                    createSquare(A, _1),
+                    createSquare(B, _1),
+                    createSquare(C, _1),     
+
                     createSquare(A, _2),
                     createSquare(C, _2),
-                    createSquare(B, _1),
-                    createSquare(B, _3)
+                    
+                    createSquare(A, _3),
+                    createSquare(B, _3),
+                    createSquare(C, _3),
+
                 ];
 
                 testSimpleMovesOnEmptyBoard(kingPosition, destinations);
@@ -72,7 +79,8 @@ describe('domain/rules/moves/king', () => {
                 
                 const destinations = [
                     createSquare(A, _2),
-                    createSquare(B, _1)
+                    createSquare(B, _1),
+                    createSquare(B, _2)
                 ];
 
                 testSimpleMovesOnEmptyBoard(kingPosition, destinations);
@@ -84,8 +92,14 @@ describe('domain/rules/moves/king', () => {
                 const otherPiecePostions = [createSquare(A, _2), createSquare(B, _3)];
 
                 const destinations = [
+                    createSquare(A, _1),
+                    createSquare(B, _1),
+                    createSquare(C, _1),     
+
                     createSquare(C, _2),
-                    createSquare(B, _1)
+                    
+                    createSquare(A, _3),
+                    createSquare(C, _3),
                 ];
 
                 testSimpleMovesOnFilledBoard(otherPiecePostions, kingPosition, PieceColor.Black, destinations);

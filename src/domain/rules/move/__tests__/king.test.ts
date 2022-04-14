@@ -1,4 +1,4 @@
-import { A, B, C, Square, _1, _2, _3 } from "../../../entities/square/Square";
+import { A, B, C, D, E, F, Square, _1, _2, _3, _5 } from "../../../entities/square/Square";
 import { createSquare } from "../../../entities/square/constructors";
 import { createBoardFromList } from "../../../entities/board/constructors";
 import {createGame} from '../../../entities/game/constructors';
@@ -21,6 +21,7 @@ describe('domain/rules/moves/king', () => {
                 getLegalMoves(game, kingPosition),
                 mapEither(sortMoveList)
             );
+
             const expectedMoves = pipe(
                 destinations,
                 mapList(destination => createRegularMove(kingPosition, destination)),
@@ -104,6 +105,24 @@ describe('domain/rules/moves/king', () => {
 
                 testSimpleMovesOnFilledBoard(otherPiecePostions, kingPosition, PieceColor.Black, destinations);
                 testSimpleMovesOnFilledBoard(otherPiecePostions, kingPosition, PieceColor.White, destinations);
+            });
+
+            it('disallows kings getting next to eachother', () => {
+                const kingPosition = createSquare(E, _3);
+                const board = createBoardFromList([
+                    [kingPosition, createPiece(PieceColor.White, PieceType.King)],
+                    [createSquare(E, _5), createPiece(PieceColor.Black, PieceType.King)]
+                ]);
+
+                const destinations = [
+                    createSquare(D, _3),
+                    createSquare(F, _3),
+                    createSquare(D, _2),
+                    createSquare(E, _2),
+                    createSquare(F, _2)
+                ];
+
+                testSimpleMoves(board, kingPosition, destinations);
             });
         });
     });

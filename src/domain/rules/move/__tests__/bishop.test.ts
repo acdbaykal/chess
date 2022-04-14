@@ -88,7 +88,7 @@ describe('domain/rules/mpves/bishop', () => {
             test(PieceColor.Black);
         });
 
-        it('stops when it encounters the oppsite color king', () => {
+        it('alows to take the oppsite color king', () => {
             const test = (color: PieceColor) => {
                 const reverseColor = reversePieceColor(color);
                 const board = createBoardFromList([
@@ -106,6 +106,7 @@ describe('domain/rules/mpves/bishop', () => {
                         createSquare(A, _8),
                         createSquare(B, _7),
                         createSquare(C, _6),
+                        createSquare(C, _4),
                         createSquare(E, _4),
                         createSquare(F, _3),
                         createSquare(G, _2),

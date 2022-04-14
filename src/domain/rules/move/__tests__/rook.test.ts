@@ -145,7 +145,7 @@ describe('domain/rules/moves/rook', () => {
                 test(PieceColor.Black);
             });
 
-            it('does not include the square which hosts the oppiste colored king', () => {
+            it('includes the square which hosts the oppiste colored king', () => {
                 const test = (color: PieceColor) => {
                     const square = createSquare(D, _5);
                     const oppositeColor = reversePieceColor(color);
@@ -166,6 +166,7 @@ describe('domain/rules/moves/rook', () => {
                             createSquare(D, _3),
                             createSquare(D, _4),
                             createSquare(D, _6),
+                            createSquare(D, _7),
                             createSquare(C, _5),
                             createSquare(B, _5),
                             createSquare(E, _5),

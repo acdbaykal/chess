@@ -50,13 +50,7 @@ export const decideIfLegal = (board:Board, moveStart: Square) => (sq: Square): I
         if(isOccupiedByColor(pieceColor)(board, sq)) {
             return IncludeWhileDecision.STOP;
         } else if(isOccupiedByColor(oppositePieceColor)(board, sq)) {
-            return pipe(
-                getPieceAt(board, sq),
-                O.map(getPieceType),
-                O.map(pieceType => pieceType === PieceType.King),
-                O.map((isKing) => isKing ? IncludeWhileDecision.STOP : IncludeWhileDecision.INCLUDE_LAST),
-                O.getOrElse(():IncludeWhileDecision  => IncludeWhileDecision.INCLUDE)
-            );
+            return IncludeWhileDecision.INCLUDE_LAST;
         } else {
             return IncludeWhileDecision.INCLUDE;
         }

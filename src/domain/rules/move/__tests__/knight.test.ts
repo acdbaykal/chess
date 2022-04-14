@@ -81,7 +81,7 @@ describe('domain/rule/move/knight', () => {
             expect(moves).toEqual(expected);
         });
 
-        it('eliminites moves which would land an the opposite king', () => {
+        it('includes moves which would land an the opposite king', () => {
             const test = (pieceColor: PieceColor) => {
                 const oppositeColor = reversePieceColor(pieceColor);
                 const board = createBoardFromList([
@@ -100,14 +100,18 @@ describe('domain/rule/move/knight', () => {
                         createSquare(C, _5),
                         createSquare(D, _4),
                         createSquare(D, _2),
-                        createSquare(C, _1)
+                        createSquare(C, _1),
+                        createSquare(A, _1)
                     ],
-                    createMoveList( createSquare(B, _3)),
+                    createMoveList(createSquare(B, _3)),
                     sortMoveList
                 );
 
                 expect(moves).toEqual(expected);
-            }
+            };
+
+            test(PieceColor.Black);
+            test(PieceColor.White);
         });
     });
 });

@@ -1,5 +1,6 @@
 import { pipe } from "fp-ts/lib/function";
 import { createBoardFromList } from "../../../entities/board/constructors";
+import { createGame } from "../../../entities/game/constructors";
 import { createMoveList } from "../../../entities/move/constructors";
 import { sortMoveList } from "../../../entities/move/transition";
 import { createPiece } from "../../../entities/piece/constructors";
@@ -14,7 +15,8 @@ describe('domain/rules/mpves/bishop', () => {
         describe('empty board', () => {
             it('returns empty list when it can not find the bishop on the given square', () => {
                 const board = createBoardFromList([]);
-                const moves = getLegalMoves(board, createSquare(D, _5));
+                const game = createGame(board, []);
+                const moves = getLegalMoves(game, createSquare(D, _5));
                 expect(moves).toEqual([]);
             });
         })
@@ -25,8 +27,10 @@ describe('domain/rules/mpves/bishop', () => {
                 const test  = (square: Square, expected: Square[]) =>{
                     const board = createBoardFromList([[square, createPiece(PieceColor.White, PieceType.Bishop)]]);
                     
+                    const game = createGame(board, []);
+
                     const moves = pipe(
-                        getLegalMoves(board, square),
+                        getLegalMoves(game, square),
                         sortMoveList
                     );
                     const expectedMoves = pipe(
@@ -68,8 +72,10 @@ describe('domain/rules/mpves/bishop', () => {
                     [createSquare(G, _2), createPiece(color, PieceType.Knight)]
                 ]);
 
+                const game = createGame(board, []);
+
                 const moves = pipe(
-                    getLegalMoves(board, createSquare(D, _5)),
+                    getLegalMoves(game, createSquare(D, _5)),
                     sortMoveList
                 );
                 const expected = pipe(
@@ -96,8 +102,10 @@ describe('domain/rules/mpves/bishop', () => {
                     [createSquare(C, _4), createPiece(reverseColor, PieceType.King)],
                 ]);
 
+                const game = createGame(board, []);
+
                 const moves = pipe(
-                    getLegalMoves(board, createSquare(D, _5)),
+                    getLegalMoves(game, createSquare(D, _5)),
                     sortMoveList
                 );
 
@@ -138,10 +146,13 @@ describe('domain/rules/mpves/bishop', () => {
                     [createSquare(G, _2), createPiece(oppositeColor, PieceType.Knight)]
                 ]);
 
+                const game = createGame(board, []);
+
                 const moves = pipe(
-                    getLegalMoves(board, createSquare(D, _5)),
+                    getLegalMoves(game, createSquare(D, _5)),
                     sortMoveList
                 );
+
                 const expected = pipe(
                     [
                         createSquare(C, _4),

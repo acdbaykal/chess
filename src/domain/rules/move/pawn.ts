@@ -21,6 +21,7 @@ import { createPiece } from "../../entities/piece/constructors";
 import { reversePieceColor } from "../../entities/piece/transition";
 import { MoveHistory } from "../../entities/movehistory/MoveHistory";
 import { getLastMove } from "../../entities/movehistory/getters";
+import { logLeft } from "../../../lib/either";
 
 const combineOption = sequenceT(Apply);
 
@@ -214,6 +215,7 @@ export const getLegalMoves = (game: Game, square:Square): Move[] => {
         mapRight(board => [board, getMovesHistory(game)]),
         // @ts-expect-error
         mapRight(combineMoves(square)),
+        logLeft,
         getEitherOrElse(() => [])
     );
 }

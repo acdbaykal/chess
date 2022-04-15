@@ -8,7 +8,7 @@ import * as Eth from "fp-ts/lib/Either";
 import {getOrElse, map as mapOption} from 'fp-ts/lib/Option';
 import { asList, getPieceAt } from "./getters";
 import { A, B, C, D, E, F, G, H, Square, _1, _2, _3, _4, _5, _6, _7, _8 } from "../square/Square";
-import { Piece } from "../piece/Piece";
+import { Piece, PieceColor } from "../piece/Piece";
 import { createPiece } from "../piece/constructors";
 import { getPieceColor } from "../piece/getters";
 import { MoveHistory } from "../movehistory/MoveHistory";
@@ -161,3 +161,13 @@ export const getPositions = (board: Board) => (piece: Piece): Square[] =>
         map(([sqr]) => sqr)
     )
 
+export const getPlayerPieces = (board: Board, player: PieceColor): [Square, Piece][] =>
+    pipe(
+        asList(board),
+        filter(
+            flow(
+                ([, piece]: [Square, Piece]) => getPieceColor(piece),
+                color => player === color
+            )
+        )
+    );

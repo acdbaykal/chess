@@ -1,7 +1,6 @@
 import { flow, pipe } from "fp-ts/lib/function";
 import { Square } from "../../entities/square/Square";
 import { toRight, toUpper, toLeft, toLower } from "../../entities/square/transitions";
-import * as E from 'fp-ts/lib/Either';
 import {filter as filterArray, map as mapArray, reduce} from 'ramda';
 import { Move } from "../../entities/move/Move";
 import { getOrUndefined } from "../../../lib/option";
@@ -13,6 +12,9 @@ import { isKnight } from "../../entities/piece/getters";
 import { getMoveFrom, getMoveTo } from "../../entities/move/getters";
 import { getOrTrue } from "../../../lib/option";
 import {sequenceT} from 'fp-ts/Apply';
+import { Game } from "../../entities/game/Game";
+import { getCurrentBoard } from "../../entities/game/getters";
+import { logLeft } from "../../../lib/either";
 
 const combineOptions = sequenceT(O.Apply);
 
@@ -54,11 +56,18 @@ const isLegalMove = (board: Board) => (move: Move): boolean => pipe(
 
 const filterLegalMoves = (board:Board) => filterArray(isLegalMove(board));
 
-export const getLegalMoves = (board: Board, position: Square):Move[] =>
+export const getLegalMoves = (game: Game, position: Square):Move[] =>
         pipe(
-            getPieceAt(board, position),
-            O.filter(isKnight),
-            O.map(() => getMoves(position)),
-            O.map(filterLegalMoves(board)),
+            getCurrentBoard(game),
+            logLeft,
+            O.fromEither,
+            O.chain(
+                (board:Board) => pipe(
+                    getPieceAt(board, position),
+                    O.filter(isKnight),
+                    O.map(() => getMoves(position)),
+                    O.map(filterLegalMoves(board))
+                )
+            ),
             O.getOrElse<Move[]>(() => [])
         );

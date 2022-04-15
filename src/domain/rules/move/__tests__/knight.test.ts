@@ -8,6 +8,7 @@ import { PieceColor, PieceType } from "../../../entities/piece/Piece";
 import { sortMoveList } from "../../../entities/move/transition";
 import { pipe } from "fp-ts/lib/function";
 import { reversePieceColor } from "../../../entities/piece/transition";
+import { createGame } from "../../../entities/game/constructors";
 
 describe('domain/rule/move/knight', () => {
     describe('getMoves', () => {
@@ -61,8 +62,10 @@ describe('domain/rule/move/knight', () => {
                 [createSquare(C, _1), createPiece(PieceColor.Black, PieceType.Pawn)]
             ]);
 
+            const game = createGame(board, []);
+
             const moves = pipe(
-                getLegalMoves(board, createSquare(B, _3)),
+                getLegalMoves(game, createSquare(B, _3)),
                 sortMoveList
             );
 
@@ -89,8 +92,10 @@ describe('domain/rule/move/knight', () => {
                     [createSquare(A, _1), createPiece(oppositeColor, PieceType.King)]
                 ]);
 
+                const game = createGame(board, []);
+
                 const moves = pipe(
-                    getLegalMoves(board, createSquare(B, _3)),
+                    getLegalMoves(game, createSquare(B, _3)),
                     sortMoveList
                 );
 

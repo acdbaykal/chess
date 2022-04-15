@@ -1,13 +1,12 @@
-import { create } from "fp-ts/lib/Date";
 import { isLeft, right } from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/function";
 import { createPromotion, createRegularMove } from "../../move/constructors";
 import { createPiece } from "../../piece/constructors";
 import { PieceColor, PieceType } from "../../piece/Piece";
 import { createSquare } from "../../square/constructors";
-import { A, B, E, H, _1, _2, _3, _4, _7, _8 } from "../../square/Square";
+import { A, B, C, E, H, _1, _2, _3, _4, _7, _8 } from "../../square/Square";
 import { createBoardFromList } from "../constructors";
-import { applyMove, applyMoveHistory, getPositions, removePiece, setPiece } from "../transitions";
+import { applyMove, applyMoveHistory, getPlayerPieces, getPositions, removePiece, setPiece } from "../transitions";
 
 describe('domain/entities/board/transitions', () => {
     describe('setPice', () => {
@@ -145,6 +144,31 @@ describe('domain/entities/board/transitions', () => {
             const positions = getPositions(board)(createPiece(PieceColor.Black, PieceType.Bishop));
             expect(positions).toContainEqual(createSquare(E, _3));
             expect(positions).toContainEqual(createSquare(E, _2));
+        });
+    });
+
+    describe('getPlayersPieces', () => {
+        it('gets [] from empty board', () => {
+            const board = createBoardFromList([]);
+            const pieces = getPlayerPieces(board, PieceColor.White);
+            expect(pieces).toEqual([]);
+        });
+
+        it('gets all the pieces and their positiosn', () => {
+            const board = createBoardFromList([
+                [createSquare(E, _4), createPiece(PieceColor.Black, PieceType.Pawn)],
+                [createSquare(E, _3), createPiece(PieceColor.Black, PieceType.Bishop)],
+                [createSquare(E, _2), createPiece(PieceColor.Black, PieceType.Bishop)],
+                [createSquare(C, _2), createPiece(PieceColor.Black, PieceType.Knight)],
+                [createSquare(E, _1), createPiece(PieceColor.White, PieceType.Bishop)]
+            ]);
+
+            const pieces = getPlayerPieces(board, PieceColor.Black);
+
+            expect(pieces).toContainEqual([createSquare(E, _4), createPiece(PieceColor.Black, PieceType.Pawn)]);
+            expect(pieces).toContainEqual([createSquare(E, _3), createPiece(PieceColor.Black, PieceType.Bishop)]);
+            expect(pieces).toContainEqual([createSquare(E, _2), createPiece(PieceColor.Black, PieceType.Bishop)]);
+            expect(pieces).toContainEqual([createSquare(C, _2), createPiece(PieceColor.Black, PieceType.Knight)]);
         });
     });
 });

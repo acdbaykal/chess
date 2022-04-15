@@ -19,3 +19,5 @@ export const logLeft = <L, R>(either: E.Either<L, R>):E.Either<L, R> =>
         either,
         E.mapLeft<L, L>(err => (console.error(err), err))
     ) as E.Either<L, R>
+
+export const getOrFalse = E.getOrElse(() => false);

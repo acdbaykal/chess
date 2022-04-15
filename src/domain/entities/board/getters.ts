@@ -8,6 +8,9 @@ import { flow } from "fp-ts/lib/function";
 import { equalsToPiece, getPieceColor, getPieceType } from "../piece/getters";
 import { createSquare, fromString } from "../square/constructors";
 import {getOrFalse} from "../../../lib/option";
+import { pipe } from "fp-ts/lib/function";
+import { logLeft } from "../../../lib/either";
+import { createPiece } from "../piece/constructors";
 
 export const getPieceAt = (board: Board, square: Square): O.Option<Piece> => {
     const key = SqGetters.toString(square);
@@ -55,3 +58,13 @@ export const getSquaresForPiece = (board: Board, piece: Piece): Square[] => {
         .filter(E.isRight)
         .map(E.getOrElse(() => createSquare(A, _1)));
 }
+
+export const asList = (board:Board): [Square, Piece][] =>
+    Object.entries(board).map(
+        ([key, piece]) => pipe(
+            fromString(key),
+            logLeft,
+            E.map(sqr => [sqr, piece] as [Square, Piece]),   
+            E.getOrElse(() => [createSquare(A, _1), createPiece(PieceColor.White, PieceType.King)])
+        )
+    )

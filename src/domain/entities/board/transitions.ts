@@ -1,12 +1,12 @@
 import { Board } from "./Board";
 import { Move } from "../move/Move";
-import {omit} from 'ramda';
+import {filter, map, omit} from 'ramda';
 import {toString} from '../square/getters';
 import { flow, pipe } from "fp-ts/lib/function";
 import { getMoveFrom, getMoveTo, isPromotionMove, getPromotionPieceType } from "../move/getters";
 import * as Eth from "fp-ts/lib/Either";
 import {getOrElse, map as mapOption} from 'fp-ts/lib/Option';
-import { getPieceAt } from "./getters";
+import { asList, getPieceAt } from "./getters";
 import { A, B, C, D, E, F, G, H, Square, _1, _2, _3, _4, _5, _6, _7, _8 } from "../square/Square";
 import { Piece } from "../piece/Piece";
 import { createPiece } from "../piece/constructors";
@@ -15,6 +15,7 @@ import { MoveHistory } from "../movehistory/MoveHistory";
 import { createSquare } from "../square/constructors";
 import { pieceToEmoji } from "../piece/transition";
 import { moveToString } from "../move/transition";
+import { equalsToPiece } from '../piece/getters';
 
 export const removePiece = (board: Board, square:Square): Board => 
     omit([toString(square)], board);
@@ -153,5 +154,10 @@ export const boardToString  = (board:Board):string =>
     .map((lineStr, index) => (index === 0 ? '  ' : `${8 - index + 1} `) + lineStr)
     .join('\n')
 
-
+export const getPositions = (board: Board) => (piece: Piece): Square[] =>
+    pipe(
+        asList(board),
+        filter(([, piece_]) => equalsToPiece(piece)(piece_)),
+        map(([sqr]) => sqr)
+    )
 

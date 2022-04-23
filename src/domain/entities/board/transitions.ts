@@ -26,45 +26,31 @@ export const setPiece = (board: Board, square: Square, piece: Piece): Board => (
 })
 
 
-type PrivateApplyMoveFunction<M extends Move> = (move:M) => (board: Board) => Eth.Either<Error, Board>
+type PrivateApplyMoveFunction<M extends Move> = (move:M) => (board: Board, piece:Piece) => Board
 
-const applyRegularMove:PrivateApplyMoveFunction<RegularMove> = move => board => {
+const applyRegularMove:PrivateApplyMoveFunction<RegularMove> = move => (board, piece) => {
     const from = getMoveFrom(move);
+    const to = getMoveTo(move);
     
     return pipe(
-        getPieceAt(board, from),
-        Eth.fromOption(() => new Error(`Applying move ${moveToString(move)} is not possible: No piece avalable at given start`)),
-        Eth.map(piece => {
-            const to = getMoveTo(move)
-
-            return pipe(
-                board,
-                board => removePiece(board, from),
-                board => setPiece(board, to, piece)
-            );
-        })
+        board,
+        board => removePiece(board, from),
+        board => setPiece(board, to, piece)
     );
 }
     
-const applyPromotion:PrivateApplyMoveFunction<Promotion> = move => board => {
+const applyPromotion:PrivateApplyMoveFunction<Promotion> = move => (board, piece) => {
     const from = getMoveFrom(move);
-    
-    return pipe(
-        getPieceAt(board, from),
-        Eth.fromOption(() => new Error(`Applying move ${moveToString(move)} is not possible: No piece avalable at given start`)),
-        Eth.map(piece => {
-            const to = getMoveTo(move)
-            const promotionType = getPromotionPieceType(move);
-            const color = getPieceColor(piece);
-            const newPiece = createPiece(color, promotionType);
+    const to = getMoveTo(move)
+    const promotionType = getPromotionPieceType(move);
+    const color = getPieceColor(piece);
+    const newPiece = createPiece(color, promotionType);
 
-            return pipe(
-                board,
-                board => removePiece(board, from),
-                board => setPiece(board, to, newPiece)
-            );
-        })
-    )
+    return pipe(
+        board,
+        board => removePiece(board, from),
+        board => setPiece(board, to, newPiece)
+    );
 }
 
 const getApplyMoveFunction = (move: Move) => {
@@ -74,11 +60,19 @@ const getApplyMoveFunction = (move: Move) => {
         return applyPromotion(move);
     }
 
-    return (b:Board) => Eth.right(b);
+    return (b:Board, _:Piece) => b;
 }
 
-export const applyMove = (board: Board, move: Move): Eth.Either<Error, Board> =>
-    getApplyMoveFunction(move)(board);
+export const applyMove = (board: Board, move: Move): Eth.Either<Error, Board> =>{
+    const _applyMove = getApplyMoveFunction(move);
+    const from = getMoveFrom(move);
+
+    return pipe(
+        getPieceAt(board, from),
+        Eth.fromOption(() => new Error(`Applying move ${moveToString(move)} is not possible: No piece avalable at given start`)),
+        Eth.map(piece => _applyMove(board, piece))
+    )
+}
 
 const chainApplyMove = (move: Move) => Eth.chain((b: Board) => applyMove(b, move));
 

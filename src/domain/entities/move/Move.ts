@@ -4,7 +4,7 @@ import {Square} from '../square/Square';
 export type PromotionPieceType =  PieceType.Bishop | PieceType.Knight | PieceType.Queen | PieceType.Rook;  
 
 export enum MoveType {
-    REGULAR, PROMOTION
+    ENPASSANT, REGULAR, PROMOTION
 }
 
 export interface Move {
@@ -16,6 +16,11 @@ export interface Move {
 export interface Promotion extends Move {
     __type__: MoveType.PROMOTION,
     pieceType: PromotionPieceType
+}
+
+export interface EnPassant extends Move {
+    __type__: MoveType.ENPASSANT
+    take: Square
 }
 
 export interface RegularMove extends Move {

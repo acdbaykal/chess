@@ -1,12 +1,12 @@
 import { Board } from "./Board";
-import { Move, Promotion, RegularMove } from "../move/Move";
+import { EnPassant, Move, Promotion, RegularMove } from "../move/Move";
 import {filter, map, omit} from 'ramda';
 import {toString} from '../square/getters';
 import { flow, pipe } from "fp-ts/lib/function";
-import { getMoveFrom, getMoveTo, isPromotionMove, getPromotionPieceType, isRegularMove } from "../move/getters";
+import { getMoveFrom, getMoveTo, isPromotionMove, getPromotionPieceType, isRegularMove, isEnPassant, getEnPassantTakeSquare } from "../move/getters";
 import * as Eth from "fp-ts/lib/Either";
 import {getOrElse, map as mapOption} from 'fp-ts/lib/Option';
-import { asList, getPieceAt } from "./getters";
+import { asList, getPieceAt, hasPieceAt } from "./getters";
 import { A, B, C, D, E, F, G, H, Square, _1, _2, _3, _4, _5, _6, _7, _8 } from "../square/Square";
 import { Piece, PieceColor } from "../piece/Piece";
 import { createPiece } from "../piece/constructors";
@@ -16,6 +16,7 @@ import { createSquare } from "../square/constructors";
 import { pieceToEmoji } from "../piece/transition";
 import { moveToString } from "../move/transition";
 import { equalsToPiece } from '../piece/getters';
+import { assert } from "../../../lib/either";
 
 export const removePiece = (board: Board, square:Square): Board => 
     omit([toString(square)], board);
@@ -41,7 +42,7 @@ const applyRegularMove:PrivateApplyMoveFunction<RegularMove> = move => (board, p
     
 const applyPromotion:PrivateApplyMoveFunction<Promotion> = move => (board, piece) => {
     const from = getMoveFrom(move);
-    const to = getMoveTo(move)
+    const to = getMoveTo(move);
     const promotionType = getPromotionPieceType(move);
     const color = getPieceColor(piece);
     const newPiece = createPiece(color, promotionType);
@@ -53,14 +54,41 @@ const applyPromotion:PrivateApplyMoveFunction<Promotion> = move => (board, piece
     );
 }
 
-const getApplyMoveFunction = (move: Move) => {
+const applyEnPassant = (move:EnPassant) => (board:Board, piece:Piece):Eth.Either<Error, Board> => {
+    const to = getMoveTo(move);
+    const from = getMoveFrom(move);
+    const take = getEnPassantTakeSquare(move);
+
+    return pipe(
+        board,
+        assert(
+            (_board) => hasPieceAt(_board, take),
+            (_board) => new Error(`Failed to apply en passant move to board: \n There is no piece to take on square ${toString(take)}\n${boardToString(_board)}`)
+        ),
+        Eth.map(_board => removePiece(_board, from)),
+        Eth.map(_board => setPiece(_board, to, piece)),
+        Eth.map(_board => removePiece(_board, take))
+    );
+}
+
+const getApplyMoveFunction = (move: Move) => (board: Board, piece:Piece):Eth.Either<Error, Board> => {
     if(isRegularMove(move)) {
-        return applyRegularMove(move);
+        return pipe(
+            applyRegularMove(move)(board, piece),
+            Eth.right
+        );
     } else if(isPromotionMove(move)) {
-        return applyPromotion(move);
+        return pipe(
+            applyPromotion(move)(board, piece),
+            Eth.right
+        )
+    } else if(isEnPassant(move)) {
+        return applyEnPassant(move)(board, piece);
     }
 
-    return (b:Board, _:Piece) => b;
+    return Eth.left(new Error(
+        `Unknown move type while applying to board: ${JSON.stringify(move)}`
+    ));
 }
 
 export const applyMove = (board: Board, move: Move): Eth.Either<Error, Board> =>{
@@ -70,7 +98,7 @@ export const applyMove = (board: Board, move: Move): Eth.Either<Error, Board> =>
     return pipe(
         getPieceAt(board, from),
         Eth.fromOption(() => new Error(`Applying move ${moveToString(move)} is not possible: No piece avalable at given start`)),
-        Eth.map(piece => _applyMove(board, piece))
+        Eth.chain(piece => _applyMove(board, piece))
     )
 }
 

@@ -30,4 +30,6 @@ export const getPromotionPieceType = (move: Promotion): PromotionPieceType =>
     getMoveTo,
     getRank
 );
+
+export const getEnPassantTakeSquare = (move:EnPassant) => move.take;
     

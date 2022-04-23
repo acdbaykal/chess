@@ -1,12 +1,13 @@
-import { isLeft, right } from "fp-ts/lib/Either";
+import { left, isLeft, right } from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/function";
-import { createPromotion, createRegularMove } from "../../move/constructors";
+import { createEnPassant, createPromotion, createRegularMove } from "../../move/constructors";
 import { createPiece } from "../../piece/constructors";
 import { PieceColor, PieceType } from "../../piece/Piece";
 import { createSquare } from "../../square/constructors";
-import { A, B, C, E, H, _1, _2, _3, _4, _7, _8 } from "../../square/Square";
+import { toString } from "../../square/getters";
+import { A, B, C, D, E, H, _1, _2, _3, _4, _7, _8 } from "../../square/Square";
 import { createBoardFromList } from "../constructors";
-import { applyMove, applyMoveHistory, getPlayerPieces, getPositions, removePiece, setPiece } from "../transitions";
+import { applyMove, applyMoveHistory, boardToString, getPlayerPieces, getPositions, removePiece, setPiece } from "../transitions";
 
 describe('domain/entities/board/transitions', () => {
     describe('setPice', () => {
@@ -96,6 +97,73 @@ describe('domain/entities/board/transitions', () => {
                 const derivedBoard = applyMove(originalBoard, move);
 
                 expect(derivedBoard).toEqual(expected);
+            });
+        });
+
+        describe('en passant', () => {
+            it('applies en passant move from e3 to d2', () => {
+                const originalBoard = createBoardFromList([
+                    [createSquare(E, _3), createPiece(PieceColor.Black, PieceType.Pawn)],
+                    [createSquare(D, _3), createPiece(PieceColor.White, PieceType.Pawn)] 
+                ]);
+
+                const move = createEnPassant(createSquare(E, _3), createSquare(D, _2), createSquare(D, _3));
+                const expected = pipe(
+                    createBoardFromList([
+                        [createSquare(D, _2), createPiece(PieceColor.Black, PieceType.Pawn)]
+                    ]),
+                    right
+                );
+
+                const derivedBoard = applyMove(originalBoard, move);
+                expect(derivedBoard).toEqual(expected);
+            });
+
+            it('applies en passant move from e3 to c2', () => {
+                const originalBoard = createBoardFromList([
+                    [createSquare(E, _3), createPiece(PieceColor.Black, PieceType.Pawn)],
+                    [createSquare(C, _3), createPiece(PieceColor.White, PieceType.Pawn)] 
+                ]);
+
+                const move = createEnPassant(createSquare(E, _3), createSquare(C, _2), createSquare(C, _3));
+                const expected = pipe(
+                    createBoardFromList([
+                        [createSquare(C, _2), createPiece(PieceColor.Black, PieceType.Pawn)]
+                    ]),
+                    right
+                );
+
+                const derivedBoard = applyMove(originalBoard, move);
+                expect(derivedBoard).toEqual(expected);
+            });
+
+            it('applies en passant move from b3 to c2', () => {
+                const originalBoard = createBoardFromList([
+                    [createSquare(B, _3), createPiece(PieceColor.Black, PieceType.Pawn)],
+                    [createSquare(C, _3), createPiece(PieceColor.White, PieceType.Pawn)] 
+                ]);
+
+                const move = createEnPassant(createSquare(B, _3), createSquare(C, _2), createSquare(C, _3));
+                const expected = pipe(
+                    createBoardFromList([
+                        [createSquare(C, _2), createPiece(PieceColor.Black, PieceType.Pawn)]
+                    ]),
+                    right
+                );
+
+                const derivedBoard = applyMove(originalBoard, move);
+                expect(derivedBoard).toEqual(expected);
+            });
+
+            it('returns left when square that would be taken is empty', () => {
+                const originalBoard = createBoardFromList([
+                    [createSquare(B, _3), createPiece(PieceColor.Black, PieceType.Pawn)]
+                ]);
+
+                const move = createEnPassant(createSquare(B, _3), createSquare(C, _2), createSquare(C, _3));
+                const expected = left(new Error(`Failed to apply en passant move to board: \n There is no piece to take on square ${toString(createSquare(C, _3))}\n${boardToString(originalBoard)}`))
+                const derived = applyMove(originalBoard, move);
+                expect(derived).toEqual(expected);
             });
         });
     });

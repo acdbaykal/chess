@@ -47,33 +47,56 @@ describe('domain/entities/board/transitions', () => {
     })
 
     describe('applyMove', () =>{
-        it('attempts to create a new board with given move applied', () => {
-            const originalBoard = createBoardFromList([
-                [createSquare(A, _2), createPiece(PieceColor.Black, PieceType.Bishop)] 
-            ]);
-
-            const move = createRegularMove(createSquare(A, _2), createSquare(A, _3))
-            const derivedBoard = applyMove(originalBoard, move);
-            const expected = pipe(
-                createBoardFromList([
-                    [createSquare(A, _3), createPiece(PieceColor.Black, PieceType.Bishop)] 
-                ]),
-                right
-            )
-            expect(derivedBoard).toEqual(expected);
-            expect(originalBoard).toEqual(createBoardFromList([
-                [createSquare(A, _2), createPiece(PieceColor.Black, PieceType.Bishop)] 
-            ]));
+        describe('regular move', () => {
+            it('attempts to create a new board with given move applied', () => {
+                const originalBoard = createBoardFromList([
+                    [createSquare(A, _2), createPiece(PieceColor.Black, PieceType.Bishop)] 
+                ]);
+    
+                const move = createRegularMove(createSquare(A, _2), createSquare(A, _3))
+                const derivedBoard = applyMove(originalBoard, move);
+                const expected = pipe(
+                    createBoardFromList([
+                        [createSquare(A, _3), createPiece(PieceColor.Black, PieceType.Bishop)] 
+                    ]),
+                    right
+                )
+                expect(derivedBoard).toEqual(expected);
+                expect(originalBoard).toEqual(createBoardFromList([
+                    [createSquare(A, _2), createPiece(PieceColor.Black, PieceType.Bishop)] 
+                ]));
+            });
+    
+            it('fails when starting square does not contain a piece', () => {
+                const board = createBoardFromList([
+                    [createSquare(A, _2), createPiece(PieceColor.Black, PieceType.Bishop)] 
+                ]);
+    
+                const move = createRegularMove(createSquare(A, _3), createSquare(A, _2));
+                const fail = applyMove(board, move);
+                expect(isLeft(fail)).toBe(true);
+            });
         });
 
-        it('fails when starting square does not contain a piece', () => {
-            const board = createBoardFromList([
-                [createSquare(A, _2), createPiece(PieceColor.Black, PieceType.Bishop)] 
-            ]);
+        describe('promotion', () => {
+            it('applies a promotion move', () => {
+                const originalBoard = createBoardFromList([
+                    [createSquare(A, _2), createPiece(PieceColor.Black, PieceType.Pawn)] 
+                ]);
 
-            const move = createRegularMove(createSquare(A, _3), createSquare(A, _2));
-            const fail = applyMove(board, move);
-            expect(isLeft(fail)).toBe(true);
+                const move = createPromotion(createSquare(A, _2), createSquare(A, _1), PieceType.Queen);
+
+                const expected = pipe(
+                    createBoardFromList([
+                        [createSquare(A, _1), createPiece(PieceColor.Black, PieceType.Queen)]
+                    ]),
+                    right
+                );
+
+                const derivedBoard = applyMove(originalBoard, move);
+
+                expect(derivedBoard).toEqual(expected);
+            });
         });
     });
 

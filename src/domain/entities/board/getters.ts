@@ -17,6 +17,11 @@ export const getPieceAt = (board: Board, square: Square): O.Option<Piece> => {
     return O.fromNullable(board[key]);
 }
 
+export const hasPieceAt = flow(
+    getPieceAt,
+   O.isSome 
+);
+
 export const getPieceColorAt = flow(
     getPieceAt,
     O.map(getPieceColor)

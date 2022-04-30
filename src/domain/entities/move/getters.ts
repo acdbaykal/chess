@@ -1,5 +1,6 @@
-import { flow } from "fp-ts/lib/function";
-import { getRank, squareEquals } from "../square/getters";
+import { flow, pipe } from "fp-ts/lib/function";
+import { createSquare } from "../square/constructors";
+import { getFile, getRank, squareEquals } from "../square/getters";
 import { Move, MoveType, EnPassant, Promotion, PromotionPieceType, RegularMove } from "./Move";
 
 export const getMoveFrom = (move: Move) => move.from;
@@ -31,5 +32,19 @@ export const getPromotionPieceType = (move: Promotion): PromotionPieceType =>
     getRank
 );
 
-export const getEnPassantTakeSquare = (move:EnPassant) => move.take;
+export const getEnPassantTakeSquare = (move:EnPassant) => {
+    const file = pipe(
+        move,
+        getMoveTo,
+        getFile
+    );
+
+    const rank = pipe(
+        move,
+        getMoveFrom,
+        getRank
+    );
+
+    return createSquare(file, rank);
+}
     

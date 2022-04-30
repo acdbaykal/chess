@@ -22,7 +22,6 @@ const EnPassentMoveFactory = Record<EnPassant>({
     from: createSquare(A, _1),
     to: createSquare(A, _2),
     __type__: MoveType.ENPASSANT,
-    take: createSquare(A, _2)
 });
 
 export const createRegularMove = (from: Square, to: Square):RegularMove => 
@@ -31,8 +30,9 @@ export const createRegularMove = (from: Square, to: Square):RegularMove =>
 export const createPromotion = (from: Square, to: Square, pieceType: PromotionPieceType):Promotion =>
     PromotionMoveFactory({from, to, __type__: MoveType.PROMOTION, pieceType})
 
-export const createEnPassant = (from: Square, to: Square, take: Square): EnPassant =>
-    EnPassentMoveFactory({from, to, take})
+export const createEnPassant = (from: Square, to: Square): EnPassant =>
+    EnPassentMoveFactory({from, to});
+   
     
 export const createMoveList = (start: Square) => (destinations: (Square | [Square, PromotionPieceType])[]): Move[] =>
     destinations.map(

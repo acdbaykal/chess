@@ -20,7 +20,6 @@ export interface Promotion extends Move {
 
 export interface EnPassant extends Move {
     __type__: MoveType.ENPASSANT
-    take: Square
 }
 
 export interface RegularMove extends Move {

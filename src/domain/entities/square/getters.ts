@@ -1,3 +1,4 @@
+import { range } from "ramda";
 import { _1, _2, _3, _4, _5, _6, _7, _8, A, B, C, D, E, F, G, H, AlphabeticCoordinate, NumericCoordinate, Square } from "./Square";
 
 
@@ -52,3 +53,15 @@ export const isLeftOf = (reference: Square) => (subject: Square): boolean =>
 /** is a squre posined futher away from the white player then the reference*/
 export const isUpOf = (reference: Square) => (subject: Square): boolean => 
     numericCoordOrder.indexOf(getRank(reference)) < numericCoordOrder.indexOf(getRank(subject));
+
+const fileTonumber = (file: AlphabeticCoordinate) =>
+    alphabeticCoordOrder.indexOf(file) + 1;
+
+const rankToNumber = (rank:NumericCoordinate) =>
+    numericCoordOrder.indexOf(rank) + 1;
+
+export const squareToNumber = (sq:Square) => {
+    const file = getFile(sq);
+    const rank = getRank(sq);
+    return fileTonumber(file) * 10 + rankToNumber(rank);
+}

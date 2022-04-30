@@ -4,7 +4,7 @@ import { getRank, squareEquals } from "../../entities/square/getters";
 import { NumericCoordinate, Square, _1, _2, _3, _4, _5, _6, _7, _8 } from "../../entities/square/Square";
 import {toBottomLeft, toBottomRight, toLeft, toLower, toRight, toUpLeft, toUpper, toUpRight} from '../../entities/square/transitions';
 import { map as mapRight, getOrElse as getEitherOrElse} from 'fp-ts/Either';
-import { createRegularMove } from "../../entities/move/constructors";
+import { createEnPassant, createRegularMove } from "../../entities/move/constructors";
 import { PieceColor, PieceType } from "../../entities/piece/Piece";
 import { getCurrentBoard, getMovesHistory } from "../../entities/game/getters";
 import { getPieceColorAt, isSquareOccupied, isSquareOccupiedByPiece } from "../../entities/board/getters";
@@ -171,7 +171,7 @@ const lrEnPassant =  (deps: LREnopassantDeps) => (square: Square) => (board:Boar
             )),
             chainOption(color => color === PieceColor.White ? takeWhenWhite(square) : takeWhenBlack(square))
         )),
-        mapOption(destination => createRegularMove(square, destination))
+        mapOption(destination => createEnPassant(square, destination))
     );
 }
     

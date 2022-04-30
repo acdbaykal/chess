@@ -5,7 +5,9 @@ import { Move, MoveType, EnPassant, Promotion, PromotionPieceType, RegularMove }
 
 export const getMoveFrom = (move: Move) => move.from;
 export const getMoveTo = (move: Move) => move.to;
+const getMoveType = (move:Move) => move.__type__;
 export const isSameMoveAs = (move1:Move) => (move2:Move):boolean =>
+    getMoveType(move1) === getMoveType(move2) &&
     squareEquals(getMoveFrom(move1))(getMoveFrom(move2)) && 
     squareEquals(getMoveTo(move1))(getMoveTo(move2));
 

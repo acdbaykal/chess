@@ -1,4 +1,4 @@
-type Predicate<Args extends Array<unknown> = unknown[]> = (...args: unknown[]) => boolean;
+type Predicate<Args extends Array<unknown> = unknown[]> = (...args: Args) => boolean;
 
 export const or = <Args extends Array<unknown>>(...funcList: Predicate<Args>[]) => (...args:Args) =>
   funcList.reduce((acc, func) => acc || func(...args), false);

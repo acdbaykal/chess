@@ -1,51 +1,46 @@
-import { sort } from "ramda";
+import { map, sort } from "ramda";
 import { PieceType } from "../piece/Piece";
-import { getFile, getRank, isLeftOf, isUpOf, toString } from "../square/getters";
+import { squareToNumber, toString } from "../square/getters";
 import { createPromotion } from "./constructors";
 import { getMoveFrom, getMoveTo, getPromotionPieceType, isPromotionMove } from "./getters";
 import { Move, Promotion, RegularMove } from "./Move";
-import {PromotionPieceType} from '../move/Move';
+import { pipe } from "fp-ts/lib/function";
+import { pieceTypeToNumber } from "../piece/getters";
 
-const promotionToValue = (promotion:PromotionPieceType) => {
-    switch(promotion) {
-        case PieceType.Bishop:
-            return 1;
-        case PieceType.Knight:
-            return 2;
-        case PieceType.Queen:
-            return 3;
-        case PieceType.Rook:
-            return 4;
+const map2 = <P, R>(mapFunc : (param:P) => R) => (list: P[][]):R[][] => pipe(list, map(map(mapFunc)));
+
+const compareMoveGeneric = (move1: Move, move2:Move): number => 
+    pipe(
+        [move1, move2],
+        map(move => [getMoveFrom(move), getMoveTo(move)]),
+        map2(squareToNumber),
+        map(([start, destination]) => start * 100 + destination),
+        ([sum1, sum2]) => sum1 - sum2
+    );
+
+const calcPromotionScore = (move:Move) => {
+    if(!isPromotionMove(move)) {
+        return 0;
     }
-};
+
+    return pipe(
+        move,
+        getPromotionPieceType,
+        pieceTypeToNumber
+    );   
+}
 
 const sortFn = (move1: Move, move2: Move):number => {
-    const to1 = getMoveTo(move1);
-    const to2 = getMoveTo(move2);
-    const sameLetter = getFile(to1) === getFile(to2);
-    const sameNum = getRank(to1) === getRank(to2);
-    const firstIsPromotion = isPromotionMove(move1);
-    const secondIsPromotion = isPromotionMove(move2);
+    const genericDiff = compareMoveGeneric(move1, move2);
 
-    if(firstIsPromotion && secondIsPromotion){
-        const firstPromotion = getPromotionPieceType(move1 as Promotion);
-        const secondPromotion = getPromotionPieceType(move2 as Promotion);
-        if(firstPromotion !== secondPromotion){
-            return promotionToValue(firstPromotion) - promotionToValue(secondPromotion);
-        }
-    } else if(firstIsPromotion && !secondIsPromotion){
-        return -1
-    } else if( !firstIsPromotion && secondIsPromotion) {
-        return 1;
+    if(genericDiff !== 0) {
+        return genericDiff;
     }
 
-    if(sameLetter && sameNum){
-        return 0;
-    } else if(sameLetter) {
-        return isUpOf(to1)(to2) ? -1 : 1; 
-    }
+    const promotionScore1 = calcPromotionScore(move1);
+    const promotionScore2 = calcPromotionScore(move2);
 
-    return isLeftOf(to1)(to2) ? -1 : 1;
+    return promotionScore1 - promotionScore2;
 };
 
 export const sortMoveList = sort(sortFn);

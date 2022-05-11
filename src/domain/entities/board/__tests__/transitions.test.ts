@@ -7,7 +7,8 @@ import { createSquare } from "../../square/constructors";
 import { toString } from "../../square/getters";
 import { A, B, C, D, E, H, _1, _2, _3, _4, _7, _8 } from "../../square/Square";
 import { createBoardFromList } from "../constructors";
-import { applyMove, applyMoveHistory, boardToString, removePiece, setPiece } from "../transitions";
+import { boardToString } from "../conversions";
+import { applyMove, applyMoveHistory, removePiece, setPiece } from "../transitions";
 
 describe('domain/entities/board/transitions', () => {
     describe('setPice', () => {

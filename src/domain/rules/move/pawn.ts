@@ -160,15 +160,6 @@ const lrEnPassant =  (deps: LREnopassantDeps) => (square: Square) => (board:Boar
         )),
         chainOption(({sideSqr}) => pipe(
             getPieceColorAt(board, square),
-            filterOption(flow(
-                color => color === PieceColor.Black ? _4 : _5,
-                enPassantRow => getRank(square) === enPassantRow
-            )),
-            filterOption(flow(
-                reversePieceColor,
-                reverseColor => createPiece(reverseColor, PieceType.Pawn),
-                targetPiece => isSquareOccupiedByPiece(targetPiece)(board, sideSqr)
-            )),
             chainOption(color => color === PieceColor.White ? takeWhenWhite(square) : takeWhenBlack(square))
         )),
         mapOption(destination => createEnPassant(square, destination))

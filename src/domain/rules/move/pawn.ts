@@ -154,6 +154,8 @@ const lrEnPassant =  (deps: LREnopassantDeps) => (square: Square) => (board:Boar
         bind('lastMove', () => getLastMove(moveHistory)),
         filterOption(({lastMove}) => isDoubleMove(board)(lastMove)),
         bind('sideSqr', () => toSide(square)),
+        // It is alreday known that the lat move was a double move
+        // however we still need to make sure it landet beside the pawn that we are calculating the moves for
         filterOption(({sideSqr, lastMove}) => pipe(
             getMoveTo(lastMove),
             squareEquals(sideSqr)

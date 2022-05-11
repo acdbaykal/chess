@@ -7,7 +7,7 @@ import { createSquare } from "../../square/constructors";
 import { toString } from "../../square/getters";
 import { A, B, C, D, E, H, _1, _2, _3, _4, _7, _8 } from "../../square/Square";
 import { createBoardFromList } from "../constructors";
-import { applyMove, applyMoveHistory, boardToString, getPlayerPieces, getPositions, removePiece, setPiece } from "../transitions";
+import { applyMove, applyMoveHistory, boardToString, removePiece, setPiece } from "../transitions";
 
 describe('domain/entities/board/transitions', () => {
     describe('setPice', () => {
@@ -211,55 +211,6 @@ describe('domain/entities/board/transitions', () => {
             const fail = applyMoveHistory(originalBoard, moveList);
 
             expect(isLeft(fail)).toBe(true);
-        });
-    });
-
-    describe('getPosistions', () =>{
-        it('returns emoty array when piece can npt be found on the boatd', () => {
-            const board = createBoardFromList([
-                [createSquare(E, _4), createPiece(PieceColor.Black, PieceType.Pawn)]
-            ]);
-
-            const positions = getPositions(board)(createPiece(PieceColor.Black, PieceType.Bishop));
-            expect(positions).toEqual([]);
-        });
-
-        it('returns all positions of a piece on the board', () => {
-            const board = createBoardFromList([
-                [createSquare(E, _4), createPiece(PieceColor.Black, PieceType.Pawn)],
-                [createSquare(E, _3), createPiece(PieceColor.Black, PieceType.Bishop)],
-                [createSquare(E, _2), createPiece(PieceColor.Black, PieceType.Bishop)],
-                [createSquare(E, _1), createPiece(PieceColor.White, PieceType.Bishop)]
-            ]);
-
-            const positions = getPositions(board)(createPiece(PieceColor.Black, PieceType.Bishop));
-            expect(positions).toContainEqual(createSquare(E, _3));
-            expect(positions).toContainEqual(createSquare(E, _2));
-        });
-    });
-
-    describe('getPlayersPieces', () => {
-        it('gets [] from empty board', () => {
-            const board = createBoardFromList([]);
-            const pieces = getPlayerPieces(board, PieceColor.White);
-            expect(pieces).toEqual([]);
-        });
-
-        it('gets all the pieces and their positiosn', () => {
-            const board = createBoardFromList([
-                [createSquare(E, _4), createPiece(PieceColor.Black, PieceType.Pawn)],
-                [createSquare(E, _3), createPiece(PieceColor.Black, PieceType.Bishop)],
-                [createSquare(E, _2), createPiece(PieceColor.Black, PieceType.Bishop)],
-                [createSquare(C, _2), createPiece(PieceColor.Black, PieceType.Knight)],
-                [createSquare(E, _1), createPiece(PieceColor.White, PieceType.Bishop)]
-            ]);
-
-            const pieces = getPlayerPieces(board, PieceColor.Black);
-
-            expect(pieces).toContainEqual([createSquare(E, _4), createPiece(PieceColor.Black, PieceType.Pawn)]);
-            expect(pieces).toContainEqual([createSquare(E, _3), createPiece(PieceColor.Black, PieceType.Bishop)]);
-            expect(pieces).toContainEqual([createSquare(E, _2), createPiece(PieceColor.Black, PieceType.Bishop)]);
-            expect(pieces).toContainEqual([createSquare(C, _2), createPiece(PieceColor.Black, PieceType.Knight)]);
         });
     });
 });

@@ -11,6 +11,7 @@ import {getOrFalse} from "../../../lib/option";
 import { pipe } from "fp-ts/lib/function";
 import { logLeft } from "../../../lib/either";
 import { createPiece } from "../piece/constructors";
+import { filter, map } from 'ramda';
 
 export const getPieceAt = (board: Board, square: Square): O.Option<Piece> => {
     const key = SqGetters.toString(square);
@@ -44,6 +45,24 @@ export const isSquareOccupiedByPiece = (piece: Piece) => flow(
     O.map(equalsToPiece(piece)),
     getOrFalse
 );
+
+export const getPositions = (board: Board) => (piece: Piece): Square[] =>
+    pipe(
+        asList(board),
+        filter(([, piece_]) => equalsToPiece(piece)(piece_)),
+        map(([sqr]) => sqr)
+    )
+
+export const getPlayerPieces = (board: Board, player: PieceColor): [Square, Piece][] =>
+    pipe(
+        asList(board),
+        filter(
+            flow(
+                ([, piece]: [Square, Piece]) => getPieceColor(piece),
+                color => player === color
+            )
+        )
+    );
 
 export const isOccupiedByColor = (color:PieceColor) => flow(
     getPieceAt,

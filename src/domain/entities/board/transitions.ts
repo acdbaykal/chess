@@ -1,21 +1,20 @@
 import { Board } from "./Board";
 import { EnPassant, Move, Promotion, RegularMove } from "../move/Move";
-import {filter, map, omit} from 'ramda';
+import {omit} from 'ramda';
 import {toString} from '../square/getters';
 import { flow, pipe } from "fp-ts/lib/function";
 import { getMoveFrom, getMoveTo, isPromotionMove, getPromotionPieceType, isRegularMove, isEnPassant, getEnPassantTakeSquare } from "../move/getters";
 import * as Eth from "fp-ts/lib/Either";
 import {getOrElse, map as mapOption} from 'fp-ts/lib/Option';
-import { asList, getPieceAt, hasPieceAt } from "./getters";
+import { getPieceAt, hasPieceAt } from "./getters";
 import { A, B, C, D, E, F, G, H, Square, _1, _2, _3, _4, _5, _6, _7, _8 } from "../square/Square";
-import { Piece, PieceColor } from "../piece/Piece";
+import { Piece } from "../piece/Piece";
 import { createPiece } from "../piece/constructors";
 import { getPieceColor } from "../piece/getters";
 import { MoveHistory } from "../movehistory/MoveHistory";
 import { createSquare } from "../square/constructors";
 import { pieceToEmoji } from "../piece/transition";
 import { moveToString } from "../move/transition";
-import { equalsToPiece } from '../piece/getters';
 import { assert } from "../../../lib/either";
 
 export const removePiece = (board: Board, square:Square): Board => 
@@ -209,21 +208,3 @@ export const boardToString  = (board:Board):string =>
     )
     .map((lineStr, index) => (index === 0 ? '  ' : `${8 - index + 1} `) + lineStr)
     .join('\n')
-
-export const getPositions = (board: Board) => (piece: Piece): Square[] =>
-    pipe(
-        asList(board),
-        filter(([, piece_]) => equalsToPiece(piece)(piece_)),
-        map(([sqr]) => sqr)
-    )
-
-export const getPlayerPieces = (board: Board, player: PieceColor): [Square, Piece][] =>
-    pipe(
-        asList(board),
-        filter(
-            flow(
-                ([, piece]: [Square, Piece]) => getPieceColor(piece),
-                color => player === color
-            )
-        )
-    );

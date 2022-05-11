@@ -69,7 +69,9 @@ const toSingleLower = (sq:Square) => pipe(
 
 type MoveAmount = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
-const moveTo = (moveSingleStep: (s:Square) => Option<Square>) => (amount: MoveAmount) => (sq: Square): Option<Square> =>
+type MoveSingleStepFn = (s:Square) => Option<Square>;
+
+const moveTo = (moveSingleStep: MoveSingleStepFn) => (amount: MoveAmount) => (sq: Square): Option<Square> =>
     range(0, amount).reduce(chainOption(moveSingleStep), some(sq));
 
 export const toRight = moveTo(toSingleRight);

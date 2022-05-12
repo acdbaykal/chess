@@ -11,7 +11,7 @@ import { Piece } from "../piece/Piece";
 import { createPiece } from "../piece/constructors";
 import { getPieceColor } from "../piece/getters";
 import { MoveHistory } from "../movehistory/MoveHistory";
-import { moveToString } from "../move/transition";
+import { moveToString } from "../move/conversions";
 import { assert } from "../../../lib/either";
 import { boardToString } from "./conversions";
 

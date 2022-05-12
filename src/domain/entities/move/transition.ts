@@ -45,14 +45,6 @@ const sortFn = (move1: Move, move2: Move):number => {
 
 export const sortMoveList = sort(sortFn);
 
-export const mapIntoPromotions = (base: RegularMove): Promotion[] =>
-    [
-        PieceType.Knight,
-        PieceType.Bishop,
-        PieceType.Queen,
-        PieceType.Rook
-    ].map(pieceType => createPromotion(base.from, base.to, pieceType));
-
 
 export const moveToString = (move:Move): string =>
    [getMoveFrom(move), getMoveTo(move)]

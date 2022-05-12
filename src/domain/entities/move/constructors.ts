@@ -38,3 +38,14 @@ export const createMoveList = (start: Square) => (destinations: (Square | [Squar
     destinations.map(
         dest => dest instanceof Array ? createPromotion(start, dest[0], dest[1]) : createRegularMove(start, dest)
     );
+
+
+const promotable:PromotionPieceType[] = [
+    PieceType.Knight,
+    PieceType.Bishop,
+    PieceType.Queen,
+    PieceType.Rook
+];
+
+export const mapIntoPromotions = (base: RegularMove): Promotion[] =>
+    promotable.map(pieceType => createPromotion(base.from, base.to, pieceType));

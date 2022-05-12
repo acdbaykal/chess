@@ -4,10 +4,10 @@ import { getRank, squareEquals } from "../../entities/square/getters";
 import { NumericCoordinate, Square, _1, _2, _3, _4, _5, _6, _7, _8 } from "../../entities/square/Square";
 import {toBottomLeft, toBottomRight, toLeft, toLower, toRight, toUpLeft, toUpper, toUpRight} from '../../entities/square/transitions';
 import { map as mapRight, getOrElse as getEitherOrElse} from 'fp-ts/Either';
-import { createEnPassant, createRegularMove } from "../../entities/move/constructors";
-import { PieceColor, PieceType } from "../../entities/piece/Piece";
+import { createEnPassant, createRegularMove, mapIntoPromotions } from "../../entities/move/constructors";
+import { PieceColor } from "../../entities/piece/Piece";
 import { getCurrentBoard, getMovesHistory } from "../../entities/game/getters";
-import { getPieceColorAt, isSquareOccupied, isSquareOccupiedByPiece } from "../../entities/board/getters";
+import { getPieceColorAt, isSquareOccupied } from "../../entities/board/getters";
 import { flow, pipe } from "fp-ts/function";
 import { Apply, chain as chainOption, Do as doOption, map as mapOption, filter as filterOption, getOrElse, Option, isSome, bind} from "fp-ts/lib/Option";
 import { Board } from "../../entities/board/Board";
@@ -16,9 +16,6 @@ import { append } from "ramda";
 import { getOrFalse, getOrUndefined } from "../../../lib/option";
 import { sequenceT } from "fp-ts/lib/Apply";
 import { getMoveFrom, getMoveFromNumericCoord, getMoveTo, getMoveToNumericCoord } from "../../entities/move/getters";
-import { mapIntoPromotions } from '../../entities/move/transition';
-import { createPiece } from "../../entities/piece/constructors";
-import { reversePieceColor } from "../../entities/piece/transition";
 import { MoveHistory } from "../../entities/movehistory/MoveHistory";
 import { getLastMove } from "../../entities/movehistory/getters";
 import { logLeft } from "../../../lib/either";
@@ -160,7 +157,7 @@ const lrEnPassant =  (deps: LREnopassantDeps) => (square: Square) => (board:Boar
             getMoveTo(lastMove),
             squareEquals(sideSqr)
         )),
-        chainOption(({sideSqr}) => pipe(
+        chainOption(({}) => pipe(
             getPieceColorAt(board, square),
             chainOption(color => color === PieceColor.White ? takeWhenWhite(square) : takeWhenBlack(square))
         )),

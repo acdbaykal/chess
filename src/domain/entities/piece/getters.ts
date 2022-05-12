@@ -21,16 +21,3 @@ export const equalsToPiece = (p1:Piece) => (p2: Piece): boolean =>
     getPieceType(p1) === getPieceType(p2) && getPieceColor(p1) === getPieceColor(p2);
 
 export const pieceToString = (piece:Piece):string => `${getPieceColor(piece)} ${getPieceType(piece)}`;
-
-
-const pieceHierarchy = [
-    PieceType.King,
-    PieceType.Queen,
-    PieceType.Rook,
-    PieceType.Bishop,
-    PieceType.Knight,
-    PieceType.Pawn
-];
-
-export const pieceTypeToNumber = (pieceType:PieceType):number => 
-    pieceHierarchy.indexOf(pieceType) + 1;

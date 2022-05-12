@@ -19,5 +19,3 @@ export const isRook = isOfType(PieceType.Rook);
 
 export const equalsToPiece = (p1:Piece) => (p2: Piece): boolean =>
     getPieceType(p1) === getPieceType(p2) && getPieceColor(p1) === getPieceColor(p2);
-
-export const pieceToString = (piece:Piece):string => `${getPieceColor(piece)} ${getPieceType(piece)}`;

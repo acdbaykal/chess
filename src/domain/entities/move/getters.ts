@@ -1,7 +1,8 @@
 import { flow, pipe } from "fp-ts/lib/function";
+import { and } from "../../../lib/boolean-logic";
 import { createSquare } from "../square/constructors";
-import { getFile, getRank, squareEquals } from "../square/getters";
-import { Move, MoveType, EnPassant, Promotion, PromotionPieceType, RegularMove } from "./Move";
+import { getFile, getRank, isLeftOf, isRightOf, squareEquals } from "../square/getters";
+import { Move, MoveType, EnPassant, Promotion, PromotionPieceType, RegularMove, Castling } from "./Move";
 
 export const getMoveFrom = (move: Move) => move.from;
 export const getMoveTo = (move: Move) => move.to;
@@ -20,6 +21,24 @@ export const isRegularMove = isOfType<RegularMove>(MoveType.REGULAR);
 export const isPromotionMove = isOfType<Promotion>(MoveType.PROMOTION);
 
 export const isEnPassant = isOfType<EnPassant>(MoveType.ENPASSANT);
+
+export const isCastling = isOfType<Castling>(MoveType.CASTLING);
+
+export const isShortCastling  = and(
+    isCastling,
+    move => pipe(
+        getMoveTo(move),
+        isRightOf(getMoveFrom(move))
+    )
+);
+
+export const isLongCastling  = and(
+    isCastling,
+    move => pipe(
+        getMoveTo(move),
+        isLeftOf(getMoveFrom(move))
+    )
+);
 
 export const getPromotionPieceType = (move: Promotion): PromotionPieceType =>
     move.pieceType;

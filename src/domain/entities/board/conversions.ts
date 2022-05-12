@@ -1,6 +1,6 @@
 import { flow } from "fp-ts/lib/function"
 import { getOrElse, map as mapOption } from "fp-ts/lib/Option"
-import { pieceToEmoji } from "../piece/transition"
+import { pieceToEmoji } from "../piece/conversions"
 import { createSquare } from "../square/constructors"
 import { _1, _2, _3, _4, _5, _6, _7, _8, A, B, C, D, E, F, G, H, Square } from "../square/Square"
 import { Board } from "./Board"

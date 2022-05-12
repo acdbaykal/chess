@@ -25,3 +25,15 @@ export const pieceToEmoji = (piece: Piece): string => {
         }
     }
 }
+
+const pieceHierarchy = [
+    PieceType.King,
+    PieceType.Queen,
+    PieceType.Rook,
+    PieceType.Bishop,
+    PieceType.Knight,
+    PieceType.Pawn
+];
+
+export const pieceTypeToNumber = (pieceType:PieceType):number => 
+    pieceHierarchy.indexOf(pieceType) + 1;

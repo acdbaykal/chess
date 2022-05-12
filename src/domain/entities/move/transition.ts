@@ -1,11 +1,9 @@
 import { map, sort } from "ramda";
-import { PieceType } from "../piece/Piece";
-import { squareToNumber, toString } from "../square/getters";
-import { createPromotion } from "./constructors";
+import { squareToNumber } from "../square/getters";
 import { getMoveFrom, getMoveTo, getPromotionPieceType, isPromotionMove } from "./getters";
-import { Move, Promotion, RegularMove } from "./Move";
+import { Move } from "./Move";
 import { pipe } from "fp-ts/lib/function";
-import { pieceTypeToNumber } from "../piece/getters";
+import { pieceTypeToNumber } from "../piece/conversions";
 
 const map2 = <P, R>(mapFunc : (param:P) => R) => (list: P[][]):R[][] => pipe(list, map(map(mapFunc)));
 

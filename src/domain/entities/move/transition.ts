@@ -44,9 +44,3 @@ const sortFn = (move1: Move, move2: Move):number => {
 };
 
 export const sortMoveList = sort(sortFn);
-
-
-export const moveToString = (move:Move): string =>
-   [getMoveFrom(move), getMoveTo(move)]
-    .map(toString)
-    .join(' ﹣> ');

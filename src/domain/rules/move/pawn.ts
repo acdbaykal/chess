@@ -1,7 +1,7 @@
 import { Game } from "../../entities/game/Game";
 import { Move, RegularMove } from "../../entities/move/Move";
-import { getRank, squareEquals } from "../../entities/square/getters";
-import { NumericCoordinate, Square, _1, _2, _3, _4, _5, _6, _7, _8 } from "../../entities/square/Square";
+import { getFile, getRank } from "../../entities/square/getters";
+import { AlphabeticCoordinate, Square, _1, _2, _3, _4, _5, _6, _7, _8 } from "../../entities/square/Square";
 import {toBottomLeft, toBottomRight, toLeft, toLower, toRight, toUpLeft, toUpper, toUpRight} from '../../entities/square/transitions';
 import { map as mapRight, getOrElse as getEitherOrElse} from 'fp-ts/Either';
 import { createEnPassant, createRegularMove, mapIntoPromotions } from "../../entities/move/constructors";
@@ -15,10 +15,12 @@ import { filter, flatten, map } from "fp-ts/lib/Array";
 import { append } from "ramda";
 import { getOrFalse, getOrUndefined } from "../../../lib/option";
 import { sequenceT } from "fp-ts/lib/Apply";
-import { getMoveFrom, getMoveFromNumericCoord, getMoveTo, getMoveToNumericCoord } from "../../entities/move/getters";
+import { getMoveFrom, getMoveTo, isSameMoveAs } from "../../entities/move/getters";
 import { MoveHistory } from "../../entities/movehistory/MoveHistory";
 import { getLastMove } from "../../entities/movehistory/getters";
 import { logLeft } from "../../../lib/either";
+import { createSquare } from "../../entities/square/constructors";
+import { reversePieceColor } from "../../entities/piece/transition";
 
 const combineOption = sequenceT(Apply);
 
@@ -29,9 +31,18 @@ const getForwardSquare = (amount: 1 | 2) => (pieceColor: PieceColor) =>
 const getSingleForwardSquare = getForwardSquare(1);
 const getDoubleForwardSquare = getForwardSquare(2);
 
+const createDoubleMove = (color: PieceColor, file:AlphabeticCoordinate) => {
+    const homeRank = getHomeRank(color);
+    const destionationRank = color === PieceColor.Black ? _5 : _4;
+    const startSquare = createSquare(file, homeRank);
+    const destinationSquare = createSquare(file, destionationRank);
+    return createRegularMove(startSquare, destinationSquare);
+}
+
+const getHomeRank = (pieceColor: PieceColor) => pieceColor === PieceColor.Black ? _7 : _2;
+
 const isAtHome = (square: Square) => (pieceColor: PieceColor): boolean =>
-    (pieceColor === PieceColor.Black && getRank(square) === _7) ||
-    (pieceColor === PieceColor.White && getRank(square) === _2)
+    getHomeRank(pieceColor) === getRank(square);
 
 const getForwardSingleSquareFromBoard = (square: Square) => (board:Board) =>
     pipe(
@@ -124,18 +135,10 @@ const promote = (board:Board) => (move:RegularMove):Move[] => pipe(
     getOrElse(() => [] as Move[])
 );
 
-const isDoubleMove = (board: Board) => (move:Move) => 
-        pipe(
-            getMoveTo(move),
-            sqr => getPieceColorAt(board, sqr),
-            mapOption((color: PieceColor): [NumericCoordinate, NumericCoordinate] => color === PieceColor.Black ? [_7, _5] : [_2, _4]),
-            mapOption(
-                ([startRow, endRow]: [NumericCoordinate, NumericCoordinate] ) => 
-                    getMoveFromNumericCoord(move) === startRow && 
-                    getMoveToNumericCoord(move) === endRow
-            ),
-            getOrFalse
-        )
+const isDoubleMoveAtFile = (color: PieceColor, expectedFile:AlphabeticCoordinate, move:Move) => pipe(
+    createDoubleMove(color, expectedFile),
+    isSameMoveAs(move)
+);
 
 interface LREnopassantDeps {
     toSide: (sq: Square) => Option<Square>,
@@ -148,20 +151,16 @@ const lrEnPassant =  (deps: LREnopassantDeps) => (square: Square) => (board:Boar
 
     return pipe(
         doOption,
+        bind('sideFile', () => pipe(
+            toSide(square),
+            mapOption(getFile)
+        )),
         bind('lastMove', () => getLastMove(moveHistory)),
-        filterOption(({lastMove}) => isDoubleMove(board)(lastMove)),
-        bind('sideSqr', () => toSide(square)),
-        // It is alreday known that the lat move was a double move
-        // however we still need to make sure it landet beside the pawn that we are calculating the moves for
-        filterOption(({sideSqr, lastMove}) => pipe(
-            getMoveTo(lastMove),
-            squareEquals(sideSqr)
-        )),
-        chainOption(({}) => pipe(
-            getPieceColorAt(board, square),
-            chainOption(color => color === PieceColor.White ? takeWhenWhite(square) : takeWhenBlack(square))
-        )),
-        mapOption(destination => createEnPassant(square, destination))
+        bind('pieceColor', () => getPieceColorAt(board, square)),
+        filterOption(({sideFile, pieceColor, lastMove}) => 
+            isDoubleMoveAtFile(reversePieceColor(pieceColor), sideFile, lastMove)),
+        bind('destination', ({pieceColor}) => pieceColor === PieceColor.White ? takeWhenWhite(square) : takeWhenBlack(square)),
+        mapOption(({destination}) => createEnPassant(square, destination))
     );
 }
     

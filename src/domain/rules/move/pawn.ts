@@ -9,10 +9,9 @@ import { PieceColor } from "../../entities/piece/Piece";
 import { getCurrentBoard, getMovesHistory } from "../../entities/game/getters";
 import { getPieceColorAt, isSquareOccupied } from "../../entities/board/getters";
 import { flow, pipe } from "fp-ts/function";
-import { Apply, chain as chainOption, Do as doOption, map as mapOption, filter as filterOption, getOrElse, Option, isSome, bind} from "fp-ts/lib/Option";
+import { Apply, chain as chainOption, Do as doOption, map as mapOption, filter as filterOption, getOrElse, Option, isSome, bind, fold} from "fp-ts/lib/Option";
 import { Board } from "../../entities/board/Board";
 import { filter, flatten, map } from "fp-ts/lib/Array";
-import { append } from "ramda";
 import { getOrFalse, getOrUndefined } from "../../../lib/option";
 import { sequenceT } from "fp-ts/lib/Apply";
 import { getMoveFrom, getMoveTo, isSameMoveAs } from "../../entities/move/getters";
@@ -21,6 +20,7 @@ import { getLastMove } from "../../entities/movehistory/getters";
 import { logLeft } from "../../../lib/either";
 import { createSquare } from "../../entities/square/constructors";
 import { reversePieceColor } from "../../entities/piece/transition";
+import { appendAll } from "../../../lib/list";
 
 const combineOption = sequenceT(Apply);
 
@@ -117,12 +117,6 @@ const getTakingMoves = (square: Square, board: Board):RegularMove[] => {
     );
 }
 
-
-const wrapOrNoMoves = (square:Square) => flow(
-    mapOption((destination:Square) => [createRegularMove(square, destination)]),
-    getOrElse(() => [] as RegularMove[])
-);
-
 const promote = (board:Board) => (move:RegularMove):Move[] => pipe(
     getPieceColorAt(board, getMoveFrom(move)),
     mapOption(pieceColor => pieceColor === PieceColor.Black ? _1 : _8),
@@ -182,21 +176,33 @@ const enPassant = (square: Square, board:Board, moveHistory:MoveHistory):Move[] 
     map(wrappedMove => getOrUndefined(wrappedMove) as Move)
 );
 
+const appendIfSome = <M extends Move>(move:Option<M>) => (moveList: M[]) => 
+    fold(
+        () => moveList,
+        (m:M) => {
+            moveList.push(m);
+            return moveList;
+        }
+    )(move);
+
 const combineMoves = (square:Square) => (boardAndHistory: [Board, MoveHistory]):Move[] => {
     const [board, moveHistory] = boardAndHistory;
     return pipe(
-        [
+        [],
+        appendIfSome(pipe(
             getForwardSingleSquareFromBoard(square, board),
-            getForwardDoubleSquareFromBoard(square, board)
-        ],
-        map(wrapOrNoMoves(square)),
-        append(getTakingMoves(square, board)),
-        append(enPassant(square, board, moveHistory)),
-        flatten,
+            mapOption(destinationSqr => createRegularMove(square, destinationSqr))
+        )),
+        appendIfSome(pipe(
+            getForwardDoubleSquareFromBoard(square, board),
+            mapOption(destinationSqr => createRegularMove(square, destinationSqr))
+        )),
+        appendAll(...getTakingMoves(square, board)),
         map(promote(board)),
         flatten,
+        appendAll(...enPassant(square, board, moveHistory))
     )
-}
+};
 
 export const getLegalMoves = (game: Game, square:Square): Move[] => {
     return pipe(

@@ -26,3 +26,6 @@ export const includeWhile = <E>(decide: IncludeDecider<E>) => (list: E[]):E[] =>
 
     return result;
 }
+
+export const appendAll = <E>(...elements: E[]) => (list:E[]) => 
+    [...list, ...elements];

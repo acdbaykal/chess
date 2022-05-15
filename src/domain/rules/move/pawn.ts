@@ -44,7 +44,7 @@ const getHomeRank = (pieceColor: PieceColor) => pieceColor === PieceColor.Black 
 const isAtHome = (square: Square) => (pieceColor: PieceColor): boolean =>
     getHomeRank(pieceColor) === getRank(square);
 
-const getForwardSingleSquareFromBoard = (square: Square) => (board:Board) =>
+const getForwardSingleSquareFromBoard = (square: Square, board:Board) =>
     pipe(
         getPieceColorAt(board, square),
         mapOption(getSingleForwardSquare),
@@ -57,7 +57,7 @@ const getBothForwardSquares = (square: Square) => (pieceColor:PieceColor) => com
     getSingleForwardSquare(pieceColor)(square)
 );
 
-const getForwardDoubleSquareFromBoard = (square: Square) => (board:Board) =>
+const getForwardDoubleSquareFromBoard = (square: Square, board:Board) =>
     pipe(
         getPieceColorAt(board, square),
         filterOption(isAtHome(square)),
@@ -88,7 +88,7 @@ const getBlackSecondTakeDestination = flow(
     chainOption(toLower(1))
 );
 
-const getTakingMoves = (square: Square) => (board: Board):RegularMove[] => {
+const getTakingMoves = (square: Square, board: Board):RegularMove[] => {
     return pipe(
         getPieceColorAt(board, square),
         mapOption(pieceColor => 
@@ -176,7 +176,7 @@ const rightEnPassant = lrEnPassant({
     takeWhenWhite: toUpRight
 });
 
-const enPassant = (square: Square) => (board:Board, moveHistory:MoveHistory):Move[] => pipe(
+const enPassant = (square: Square, board:Board, moveHistory:MoveHistory):Move[] => pipe(
     [leftEnPassant(square)(board, moveHistory), rightEnPassant(square)(board, moveHistory)],
     filter(isSome),
     map(wrappedMove => getOrUndefined(wrappedMove) as Move)
@@ -186,12 +186,12 @@ const combineMoves = (square:Square) => (boardAndHistory: [Board, MoveHistory]):
     const [board, moveHistory] = boardAndHistory;
     return pipe(
         [
-            getForwardSingleSquareFromBoard(square)(board),
-            getForwardDoubleSquareFromBoard(square)(board)
+            getForwardSingleSquareFromBoard(square, board),
+            getForwardDoubleSquareFromBoard(square, board)
         ],
         map(wrapOrNoMoves(square)),
-        append(getTakingMoves(square)(board)),
-        append(enPassant(square)(board, moveHistory)),
+        append(getTakingMoves(square, board)),
+        append(enPassant(square, board, moveHistory)),
         flatten,
         map(promote(board)),
         flatten,

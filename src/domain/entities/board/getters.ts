@@ -28,6 +28,11 @@ export const getPieceColorAt = flow(
     O.map(getPieceColor)
 );
 
+export const getPieceTypeAt = flow(
+    getPieceAt,
+    O.map(getPieceType)
+);
+
 export const isSquareOccupied = flow(
     getPieceAt,
     O.isSome

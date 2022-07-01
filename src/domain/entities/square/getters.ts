@@ -1,7 +1,5 @@
-import { range } from "ramda";
 import { _1, _2, _3, _4, _5, _6, _7, _8, A, B, C, D, E, F, G, H, AlphabeticCoordinate, NumericCoordinate, Square } from "./Square";
-
-
+    
 export const getFile = (s:Square) => s.file;
 export const getRank = (s:Square) => s.rank;
 
@@ -40,19 +38,23 @@ export const squareEquals = (s1: Square) => (s2: Square) =>
 
 
 const numericCoordOrder = [_1, _2, _3, _4, _5, _6, _7, _8];   
-const alphabeticCoordOrder = [A, B, C, D, E, F, G];
-/** is a square positionad at the right of another from white's perspactive  */
-export const isRightOf = (reference: Square) => (subject: Square): boolean => 
-    alphabeticCoordOrder.indexOf(getFile(reference)) < alphabeticCoordOrder.indexOf(getFile(subject));
+const alphabeticCoordOrder = [A, B, C, D, E, F, G, H];
 
+const getFileIndex = (sq: Square) => alphabeticCoordOrder.indexOf(getFile(sq));
+
+/** is a square positionad at the right of another from white's perspactive  */
+export const isRightOf = (reference: Square) => (subject: Square): boolean =>
+    getFileIndex(reference) < getFileIndex(subject);
+    
 /** is a square positionad at the left of another from white's perspective  */
 export const isLeftOf = (reference: Square) => (subject: Square): boolean => 
-    alphabeticCoordOrder.indexOf(getFile(reference)) > alphabeticCoordOrder.indexOf(getFile(subject));
+    getFileIndex(reference) > getFileIndex(subject);
 
+const getRowIndex = (sq: Square) => numericCoordOrder.indexOf(getRank(sq));
 
 /** is a squre posined futher away from the white player then the reference*/
 export const isUpOf = (reference: Square) => (subject: Square): boolean => 
-    numericCoordOrder.indexOf(getRank(reference)) < numericCoordOrder.indexOf(getRank(subject));
+    getRowIndex(reference) < getRowIndex(reference);
 
 const fileTonumber = (file: AlphabeticCoordinate) =>
     alphabeticCoordOrder.indexOf(file) + 1;

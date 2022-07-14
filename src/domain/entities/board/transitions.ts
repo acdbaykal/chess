@@ -12,11 +12,10 @@ import { createPiece } from "../piece/constructors";
 import { getPieceColor, isKing } from "../piece/getters";
 import { MoveHistory } from "../movehistory/MoveHistory";
 import { moveToString } from "../move/conversions";
-import { assert } from "../../../lib/either";
+import { assert, fromNullable } from "../../../lib/either";
 import { boardToString } from "./conversions";
-import { chain, map as mapOption, isSome, Option, none, some } from "fp-ts/lib/Option";
-import { getOrFalse } from "../../../lib/option";
 import { toLeft, toRight } from "../square/transitions";
+import { isNotNull, Nullable, pipeUntilNull } from "../../../lib/nullable";
 
 export const removePiece = (board: Board, square:Square): Board => 
     omit([toString(square)], board);
@@ -71,27 +70,22 @@ const applyEnPassant = (move:EnPassant) => (board:Board, piece:Piece):Eth.Either
     );
 }
 
-const findCastlingRookSquare = (board: Board, kingPosition: Square, getNextSquare: (sq: Square) => Option<Square>): Option<Square> => {
-    let currentSquare = some(kingPosition);
+const findCastlingRookSquare = (board: Board, kingPosition: Square, getNextSquare: (sq: Square) => Nullable<Square>): Nullable<Square> => {
+    let currentSquare:Nullable<Square> = kingPosition;
     
     while(true) {
-        currentSquare = pipe(
-            currentSquare,
-            chain(square => getNextSquare(square))
-        );
+        currentSquare = getNextSquare(currentSquare);
 
-        if(isSome(currentSquare)) {
-            const isRook = pipe(
-                currentSquare,
-                chain(square => getPieceTypeAt(board, square)),
-                mapOption(type => type === PieceType.Rook),
-                getOrFalse 
+        if(isNotNull(currentSquare)) {
+            const isRook = pipeUntilNull(
+                getPieceTypeAt(board, currentSquare),
+                type => type === PieceType.Rook
             );
 
             if(isRook) return currentSquare;
             else continue;
         } else {
-            return none;
+            return undefined;
         }
     }
 } 
@@ -117,11 +111,11 @@ const applyCastling = (move:Castling, board:Board, piece: Piece): Eth.Either<Err
                 isShort
                     ? findCastlingRookSquare(board, from, toRight(1))
                     : findCastlingRookSquare(board, from, toLeft(1)),
-                Eth.fromOption(() => Error(`No rook found for castling`))
+                fromNullable(() => Error(`No rook found for castling`))
             )),
             Eth.bind('rookDestination', () => pipe(
                 isShort ? toLeft(1)(to) : toRight(1)(to),
-                Eth.fromOption(() => Error(`Illegal king destionation for castling ${toString(to)}`))
+                fromNullable(() => Error(`Illegal king destionation for castling ${toString(to)}`))
             )),
             Eth.map(({rookDestination, rookPosition}) => movePiece(board, rook, rookPosition, rookDestination))
         )
@@ -156,7 +150,7 @@ export const applyMove = (board: Board, move: Move): Eth.Either<Error, Board> =>
 
     return pipe(
         getPieceAt(board, from),
-        Eth.fromOption(() => new Error(`Applying move ${moveToString(move)} is not possible: No piece avalable at given start`)),
+        fromNullable(() => new Error(`Applying move ${moveToString(move)} is not possible: No piece avalable at given start`)),
         Eth.chain(piece => _applyMove(board, piece))
     )
 }

@@ -1,7 +1,5 @@
 import { Square, _1 } from "../../entities/square/Square";
-import * as O from 'fp-ts/Option';
 import { flow, pipe } from "fp-ts/lib/function";
-import { getOrUndefined } from "../../../lib/option";
 import { getPieceAt, getPieceColorAt, isOccupiedByColor } from "../../entities/board/getters";
 import { includeWhile, IncludeWhileDecision } from "../../../lib/list";
 import { reversePieceColor } from "../../entities/piece/transition";
@@ -13,25 +11,26 @@ import { Piece } from "../../entities/piece/Piece";
 import { Game } from "../../entities/game/Game";
 import { getCurrentBoard } from "../../entities/game/getters";
 import { logLeft } from "../../../lib/either";
+import { defaultTo, filterNullable, fromEither, isNull, mapNullable, Nullable, pipeUntilNull, pipeWithFallback } from "../../../lib/nullable";
 
-type NextSquareFn = (sq:Square) => O.Option<Square>;
+type NextSquareFn = (sq:Square) => Nullable<Square>;
 type DestinationGenerator = (moveStart: Square) => Generator<Square, void, unknown>;
 
 export const createDestinationGenerator = (getNextSquare: NextSquareFn) => {
     return function*(moveStart: Square) {
-        let currentMove = O.some<Square>(moveStart);
+        let currentMove = moveStart as Nullable<Square>;
         
         while(true){
             currentMove = pipe(
                 currentMove,
-                O.chain(getNextSquare)
+                mapNullable(getNextSquare)
             );
 
-            if (O.isNone(currentMove)) {
+            if (isNull(currentMove)) {
                 break;
             }
            
-            yield getOrUndefined(currentMove) as Square;
+            yield currentMove;
         };
     }
 };
@@ -45,9 +44,10 @@ const getDestinations = (destinationGenerators: DestinationGenerator[],  moveSta
         ))
     );
 
-export const decideIfLegal = (board:Board, moveStart: Square) => (sq: Square): IncludeWhileDecision => pipe(
+export const decideIfLegal = (board:Board, moveStart: Square) => (sq: Square): IncludeWhileDecision => pipeWithFallback(
+    () => IncludeWhileDecision.INCLUDE,
     getPieceColorAt(board, moveStart),
-    O.map((pieceColor):IncludeWhileDecision => {
+    (pieceColor):IncludeWhileDecision => {
         const oppositePieceColor = reversePieceColor(pieceColor);
         if(isOccupiedByColor(pieceColor)(board, sq)) {
             return IncludeWhileDecision.STOP;
@@ -56,8 +56,7 @@ export const decideIfLegal = (board:Board, moveStart: Square) => (sq: Square): I
         } else {
             return IncludeWhileDecision.INCLUDE;
         }
-    }),
-    O.getOrElse(():IncludeWhileDecision => IncludeWhileDecision.INCLUDE)
+    }
 );
 
 export const createGetLegalMoves = 
@@ -66,16 +65,16 @@ export const createGetLegalMoves =
         pipe(
             getCurrentBoard(game),
             logLeft,
-            O.fromEither,
-            O.chain(
-                board => pipe(
+            board => fromEither(board),
+            mapNullable(
+                board => pipeUntilNull(
                     getPieceAt(board, moveStart),
-                    O.filter(isOfType),
-                    O.map(() => getDestinations(destinationGenerators, moveStart)),
-                    O.map(mapArray(includeWhile(decideIfLegal(board, moveStart)))),
-                    O.map(flatten),
-                    O.map(createMoveList(moveStart))
+                    filterNullable(isOfType),
+                    () => getDestinations(destinationGenerators, moveStart),
+                    mapArray(includeWhile(decideIfLegal(board, moveStart))),
+                    flatten,
+                    createMoveList(moveStart)
                 )
             ),
-            O.getOrElse<Move[]>(() => [])
+            defaultTo(() => [] as Move[])
         );

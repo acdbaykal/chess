@@ -1,18 +1,16 @@
-import { flow, pipe } from 'fp-ts/lib/function';
+import { pipe } from 'fp-ts/lib/function';
 import {A, B, C, F, G, H, Square, _1, _2, _3, _4, _5, _6, _8} from '../Square';
-import { toLeft, toLower, toRight, toUpper } from '../transitions';
-import {getOrUndefined} from '../../../../lib/option';
+import { toLeft, toLower, toRight, toUpper, MoveAmount } from '../transitions';
 import { createSquare } from '../constructors';
-import { isNone } from 'fp-ts/lib/Option';
+import { isNull } from '../../../../lib/nullable';
 
 describe('domain/entities/square/transitions', () => {
     describe('toRight', () => {
         it('gets the square on the right of the current', () => {
-            const test = (sq:Square, amount: number, expected: Square) => {
+            const test = (sq:Square, amount: MoveAmount, expected: Square) => {
                 const rightSq = pipe(
                     sq, 
                     toRight(amount),
-                    getOrUndefined
                 );
                 expect(rightSq).toEqual(expected);
             }
@@ -23,10 +21,10 @@ describe('domain/entities/square/transitions', () => {
             test(createSquare(C, _2), 3, createSquare(F, _2));
         });
 
-        it('fails when out of board', () => {
-            const test = (sq: Square, amount: number) => {
+        it('returns undefined when out of board', () => {
+            const test = (sq: Square, amount: MoveAmount) => {
                 const rightSq = toRight(amount)(sq);
-                expect(isNone(rightSq)).toBe(true);
+                expect(rightSq).toBeUndefined();
             }
 
             test(createSquare(H, _1), 1);
@@ -40,11 +38,10 @@ describe('domain/entities/square/transitions', () => {
 
     describe('toLeft', () => {
         it('gets the square on the left of the current', () => {
-            const test = (sq:Square, amount: number, expected: Square) => {
+            const test = (sq:Square, amount: MoveAmount, expected: Square) => {
                 const leftSq = pipe(
                     sq, 
-                    toLeft(amount),
-                    getOrUndefined
+                    toLeft(amount)
                 );
                 expect(leftSq).toEqual(expected);
             }
@@ -56,9 +53,9 @@ describe('domain/entities/square/transitions', () => {
         });
 
         it('fails when out of board', () => {
-            const test = (sq: Square, amount: number) => {
+            const test = (sq: Square, amount: MoveAmount) => {
                 const leftSq = toLeft(amount)(sq);
-                expect(isNone(leftSq)).toBe(true);
+                expect(isNull(leftSq)).toBe(true);
             }
 
             test(createSquare(A, _1), 1);
@@ -72,11 +69,10 @@ describe('domain/entities/square/transitions', () => {
 
     describe('toUpper', () => {
         it('gets the square further away from the white player', () => {
-            const test = (sq:Square, amount: number, expected: Square) => {
+            const test = (sq:Square, amount: MoveAmount, expected: Square) => {
                 const upSq = pipe(
                     sq, 
                     toUpper(amount),
-                    getOrUndefined
                 );
                 expect(upSq).toEqual(expected);
             }
@@ -89,27 +85,24 @@ describe('domain/entities/square/transitions', () => {
         });
 
         it('fails when out of board', () => {
-            const test = (sq: Square, amount: number) => {
+            const test = (sq: Square, amount: MoveAmount) => {
                 const upSq = toUpper(amount)(sq);
-                expect(isNone(upSq)).toBe(true);
+                expect(isNull(upSq)).toBe(true);
             }
 
-            test(createSquare(A, _1), 8);
-            test(createSquare(A, _1), 9);
             test(createSquare(B, _3), 6);
-            test(createSquare(B, _3), 8);
+            test(createSquare(B, _3), 7);
             test(createSquare(C, _2), 7);
-            test(createSquare(C, _2), 8);
+            test(createSquare(C, _2), 7);
         });
     });
 
     describe('toLower', () => {
         it('gets the square closer to the white player', () => {
-            const test = (sq:Square, amount: number, expected: Square) => {
+            const test = (sq:Square, amount: MoveAmount, expected: Square) => {
                 const lowSq = pipe(
                     sq, 
                     toLower(amount),
-                    getOrUndefined
                 );
                 expect(lowSq).toEqual(expected);
             }
@@ -122,12 +115,11 @@ describe('domain/entities/square/transitions', () => {
         });
 
         it('fails when out of board', () => {
-            const test = (sq: Square, amount: number) => {
+            const test = (sq: Square, amount: MoveAmount) => {
                 const lowSq = toLower(amount)(sq);
-                expect(isNone(lowSq)).toBe(true);
+                expect(isNull(lowSq)).toBe(true);
             }
 
-            test(createSquare(A, _8), 8);
             test(createSquare(A, _1), 1);
             test(createSquare(B, _3), 3);
             test(createSquare(B, _3), 4);

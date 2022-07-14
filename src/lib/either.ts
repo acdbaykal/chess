@@ -1,6 +1,7 @@
 import { sequenceT } from 'fp-ts/lib/Apply';
 import * as E from 'fp-ts/lib/Either';
 import { pipe } from 'fp-ts/lib/function';
+import { isNull, Nullable } from './nullable';
 
 
 // @ts-expect-error
@@ -26,3 +27,8 @@ export const assert = <L, Arg>(test: (arg:Arg) => boolean, onLeft: (arg:Arg) => 
     test(arg)
         ? E.right(arg)
         : E.left(onLeft(arg))
+
+
+export const fromNullable =  <L, N>(ifNull: () => L) => (n: Nullable<N>):E.Either<L, N> => 
+        isNull(n) ? E.left(ifNull()) : E.right(n);
+        

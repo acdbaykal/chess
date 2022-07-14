@@ -2,53 +2,48 @@ import { Board } from "./Board";
 import { A, Square, _1 } from "../square/Square";
 import {Piece, PieceColor, PieceType} from '../piece/Piece';
 import * as SqGetters  from '../square/getters'
-import * as O from 'fp-ts/Option';
 import * as E from 'fp-ts/Either';
 import { flow } from "fp-ts/lib/function";
 import { equalsToPiece, getPieceColor, getPieceType } from "../piece/getters";
 import { createSquare, fromString } from "../square/constructors";
-import {getOrFalse} from "../../../lib/option";
 import { pipe } from "fp-ts/lib/function";
 import { logLeft } from "../../../lib/either";
 import { createPiece } from "../piece/constructors";
 import { filter, map } from 'ramda';
+import { flowUntilNull, flowWithFallback, isNotNull, Nullable } from "../../../lib/nullable";
 
-export const getPieceAt = (board: Board, square: Square): O.Option<Piece> => {
+export const getPieceAt = (board: Board, square: Square): Nullable<Piece> => {
     const key = SqGetters.toString(square);
-    return O.fromNullable(board[key]);
+    return board[key];
 }
 
 export const hasPieceAt = flow(
     getPieceAt,
-   O.isSome 
+    isNotNull
 );
 
-export const getPieceColorAt = flow(
+export const getPieceColorAt = flowUntilNull(
     getPieceAt,
-    O.map(getPieceColor)
+    getPieceColor
 );
 
-export const getPieceTypeAt = flow(
+export const getPieceTypeAt = flowUntilNull(
     getPieceAt,
-    O.map(getPieceType)
+    getPieceType
 );
 
-export const isSquareOccupied = flow(
-    getPieceAt,
-    O.isSome
+export const isSquareOccupied = hasPieceAt;
+
+export const isSquareOccupiedByPieceType = (type: PieceType) => flowWithFallback(
+    () => false,
+    getPieceTypeAt,
+    _pt => _pt === type
 );
 
-export const isSquareOccupiedByPieceType = (type: PieceType) => flow(
+export const isSquareOccupiedByPiece = (piece: Piece) => flowWithFallback(
+    () => false,
     getPieceAt,
-    O.map(getPieceType),
-    O.map(_pt => _pt === type),
-    getOrFalse
-);
-
-export const isSquareOccupiedByPiece = (piece: Piece) => flow(
-    getPieceAt,
-    O.map(equalsToPiece(piece)),
-    getOrFalse
+    equalsToPiece(piece)
 );
 
 export const getPositions = (board: Board) => (piece: Piece): Square[] =>
@@ -69,11 +64,11 @@ export const getPlayerPieces = (board: Board, player: PieceColor): [Square, Piec
         )
     );
 
-export const isOccupiedByColor = (color:PieceColor) => flow(
+export const isOccupiedByColor = (color:PieceColor) => flowWithFallback(
+    () => false,
     getPieceAt,
-    O.map(getPieceColor),
-    O.map(c => c === color),
-    getOrFalse
+    getPieceColor,
+    c => c === color
 );
 
 export const getSquaresForPiece = (board: Board, piece: Piece): Square[] => {

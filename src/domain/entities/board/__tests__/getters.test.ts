@@ -1,5 +1,4 @@
-import { isNone, isSome } from "fp-ts/lib/Option";
-import { getOrUndefined } from "../../../../lib/option";
+import { isNotNull, isNull } from "../../../../lib/nullable";
 import { createPiece } from "../../piece/constructors";
 import { equalsToPiece } from "../../piece/getters";
 import { Piece, PieceColor, PieceType } from "../../piece/Piece";
@@ -21,8 +20,8 @@ describe('domain/entities/board/getters', () => {
             ]);
 
             const result = getPieceAt(board, square);
-            expect(isSome(result)).toBe(true);
-            const equal = equalsToPiece(piece)(getOrUndefined(result) as Piece);
+            expect(isNotNull(result)).toBe(true);
+            const equal = equalsToPiece(piece)(result as Piece);
             expect(equal).toBe(true);
         });
 
@@ -34,7 +33,7 @@ describe('domain/entities/board/getters', () => {
             ]);
 
             const result = getPieceAt(board, createSquare(F, _5));
-            expect(isNone(result)).toBe(true);
+            expect(isNull(result)).toBe(true);
         });
     });
 

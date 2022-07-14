@@ -1,6 +1,5 @@
 import { left, isLeft, right } from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/function";
-import { none, some } from "fp-ts/lib/Option";
 import { getOrUndefined } from "../../../../lib/either";
 import { createCastling, createEnPassant, createPromotion, createRegularMove } from "../../move/constructors";
 import { createPiece } from "../../piece/constructors";
@@ -187,7 +186,7 @@ describe('domain/entities/board/transitions', () => {
                     applyMove(originalBoard, move),
                     getOrUndefined
                 ) as Board;
-                expect(getPieceAt(derivedBoard, to)).toEqual(some(king));
+                expect(getPieceAt(derivedBoard, to)).toEqual(king);
             });
 
             it('returns left if the piece present at the from square is not a king', () => {
@@ -220,8 +219,8 @@ describe('domain/entities/board/transitions', () => {
                         getOrUndefined
                     ) as Board;
 
-                    expect(getPieceAt(derivedBoard, to)).toEqual(some(king));
-                    expect(getPieceAt(derivedBoard, createSquare(F, _1))).toEqual(some(rook));
+                    expect(getPieceAt(derivedBoard, to)).toEqual(king);
+                    expect(getPieceAt(derivedBoard, createSquare(F, _1))).toEqual(rook);
                 });
 
                 it('works with fishers random type of castling', () =>{
@@ -240,9 +239,9 @@ describe('domain/entities/board/transitions', () => {
                         getOrUndefined
                     ) as Board;
 
-                    expect(getPieceAt(derivedBoard, to)).toEqual(some(king));
-                    expect(getPieceAt(derivedBoard, createSquare(F, _1))).toEqual(some(rook));
-                    expect(getPieceAt(derivedBoard, createSquare(C, _1))).toEqual(none);
+                    expect(getPieceAt(derivedBoard, to)).toEqual(king);
+                    expect(getPieceAt(derivedBoard, createSquare(F, _1))).toEqual(rook);
+                    expect(getPieceAt(derivedBoard, createSquare(C, _1))).toBeUndefined();
                 });
             });
 
@@ -263,8 +262,8 @@ describe('domain/entities/board/transitions', () => {
                         getOrUndefined
                     ) as Board;
 
-                    expect(getPieceAt(derivedBoard, to)).toEqual(some(king));
-                    expect(getPieceAt(derivedBoard, createSquare(D, _1))).toEqual(some(rook));
+                    expect(getPieceAt(derivedBoard, to)).toEqual(king);
+                    expect(getPieceAt(derivedBoard, createSquare(D, _1))).toEqual(rook);
                 });
 
                 it('works with fishers random type of castling', () =>{
@@ -283,9 +282,9 @@ describe('domain/entities/board/transitions', () => {
                         getOrUndefined
                     ) as Board;
 
-                    expect(getPieceAt(derivedBoard, to)).toEqual(some(king));
-                    expect(getPieceAt(derivedBoard, createSquare(D, _8))).toEqual(some(rook));
-                    expect(getPieceAt(derivedBoard, createSquare(A, _8))).toEqual(none);
+                    expect(getPieceAt(derivedBoard, to)).toEqual(king);
+                    expect(getPieceAt(derivedBoard, createSquare(D, _8))).toEqual(rook);
+                    expect(getPieceAt(derivedBoard, createSquare(A, _8))).toBeUndefined();
                 });
             });
         });

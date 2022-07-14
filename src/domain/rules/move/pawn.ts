@@ -9,11 +9,8 @@ import { PieceColor } from "../../entities/piece/Piece";
 import { getCurrentBoard, getMovesHistory } from "../../entities/game/getters";
 import { getPieceColorAt, isSquareOccupied } from "../../entities/board/getters";
 import { flow, pipe } from "fp-ts/function";
-import { Apply, chain as chainOption, Do as doOption, map as mapOption, filter as filterOption, getOrElse, Option, isSome, bind, fold} from "fp-ts/lib/Option";
 import { Board } from "../../entities/board/Board";
 import { filter, flatten, map } from "fp-ts/lib/Array";
-import { getOrFalse, getOrUndefined } from "../../../lib/option";
-import { sequenceT } from "fp-ts/lib/Apply";
 import { getMoveFrom, getMoveTo, isSameMoveAs } from "../../entities/move/getters";
 import { MoveHistory } from "../../entities/movehistory/MoveHistory";
 import { getLastMove } from "../../entities/movehistory/getters";
@@ -21,8 +18,7 @@ import { logLeft } from "../../../lib/either";
 import { createSquare } from "../../entities/square/constructors";
 import { reversePieceColor } from "../../entities/piece/transition";
 import { appendAll } from "../../../lib/list";
-
-const combineOption = sequenceT(Apply);
+import { bindNullable, combineNullables, defaultTo, filterNullable, flowUntilNull, guardNullable, isNotNull, isNull, mapNullable, Nullable, pipeUntilNull } from "../../../lib/nullable";
 
 const getForwardSquare = (amount: 1 | 2) => (pieceColor: PieceColor) =>
     pieceColor === PieceColor.Black ? toLower(amount) : toUpper(amount);
@@ -45,88 +41,94 @@ const isAtHome = (square: Square) => (pieceColor: PieceColor): boolean =>
     getHomeRank(pieceColor) === getRank(square);
 
 const getForwardSingleSquareFromBoard = (square: Square, board:Board) =>
-    pipe(
+    pipeUntilNull(
         getPieceColorAt(board, square),
-        mapOption(getSingleForwardSquare),
-        chainOption(_getForwardSquare => _getForwardSquare(square)),
-        filterOption(sq => !isSquareOccupied(board, sq))
+        pieceColor => getSingleForwardSquare(pieceColor)(square),
+        filterNullable((sq:Square) => !isSquareOccupied(board, sq))
     );
 
-const getBothForwardSquares = (square: Square) => (pieceColor:PieceColor) => combineOption(
+const getBothForwardSquares = (square: Square) => (pieceColor:PieceColor):Nullable<Square[]> => combineNullables(
     getDoubleForwardSquare(pieceColor)(square),
     getSingleForwardSquare(pieceColor)(square)
 );
 
 const getForwardDoubleSquareFromBoard = (square: Square, board:Board) =>
-    pipe(
+    pipeUntilNull(
         getPieceColorAt(board, square),
-        filterOption(isAtHome(square)),
-        chainOption(getBothForwardSquares(square)),
-        filterOption(
+        guardNullable(isAtHome(square)),
+        getBothForwardSquares(square),
+        guardNullable<Square[]>(
             ([doubleSq, singleSq]) => !isSquareOccupied(board, doubleSq) && !isSquareOccupied(board, singleSq)
         ),
-        mapOption(([doubleSq]) => doubleSq)
+        ([doubleSq]) => doubleSq
     );
 
 const getWhiteFirstTakeDestination = flow(
     toLeft(1),
-    chainOption(toUpper(1))
+    mapNullable(toUpper(1))
 );
 
 const getWhiteSecondTakeDestination = flow(
     toRight(1),
-    chainOption(toUpper(1))
+    mapNullable(toUpper(1))
 );
 
 const getBlackFirstTakeDestination = flow(
     toLeft(1),
-    chainOption(toLower(1))
+    mapNullable(toLower(1))
 );
 
 const getBlackSecondTakeDestination = flow(
     toRight(1),
-    chainOption(toLower(1))
+    mapNullable(toLower(1))
 );
 
 const getTakingMoves = (square: Square, board: Board):RegularMove[] => {
     return pipe(
-        getPieceColorAt(board, square),
-        mapOption(pieceColor => 
-            pipe(
-                pieceColor === PieceColor.White
-                    ?[
-                        getWhiteFirstTakeDestination(square),
-                        getWhiteSecondTakeDestination(square)
-                    ]
-                    : [
-                        getBlackFirstTakeDestination(square),
-                        getBlackSecondTakeDestination(square)
-                    ],
-                filter(flow (
-                    chainOption((destination:Square) => getPieceColorAt(board, destination)),
-                    mapOption(color => color !== pieceColor),
-                    getOrFalse,
-                )),
-                map(flow(
-                    getOrUndefined,
-                    destination => createRegularMove(square, destination as Square)
-                ))
-            )
+        pipeUntilNull(
+            getPieceColorAt(board, square),
+            pieceColor => 
+                pipeUntilNull(
+                    pieceColor === PieceColor.White
+                        ?[
+                            getWhiteFirstTakeDestination(square),
+                            getWhiteSecondTakeDestination(square)
+                        ]
+                        : [
+                            getBlackFirstTakeDestination(square),
+                            getBlackSecondTakeDestination(square)
+                        ],
+                    filter(
+                        flow(
+                            mapNullable((destination: Square) => getPieceColorAt(board, destination)),
+                            mapNullable((color:PieceColor) => color !== pieceColor),
+                            defaultTo(() => false)
+                        )
+                    ),
+                    map(
+                        destination => createRegularMove(square, destination as Square)
+                    )
+                )
         ),
-        getOrElse(() => [] as RegularMove[])
-    );
+        defaultTo(() => [] as RegularMove[])
+    )
+    
+    
+    
 }
 
 const promote = (board:Board) => (move:RegularMove):Move[] => pipe(
-    getPieceColorAt(board, getMoveFrom(move)),
-    mapOption(pieceColor => pieceColor === PieceColor.Black ? _1 : _8),
-    mapOption(lastRow => pipe(
-        getMoveTo(move),
-        getRank,
-        row => row === lastRow
-    )),
-    mapOption((isLastRow:boolean):Move[] => isLastRow ? mapIntoPromotions(move) as Move[] : [move]),
-    getOrElse(() => [] as Move[])
+    pipeUntilNull(
+        getPieceColorAt(board, getMoveFrom(move)),
+        pieceColor => pieceColor === PieceColor.Black ? _1 : _8,
+        lastRow => pipe(
+            getMoveTo(move),
+            getRank,
+            row => row === lastRow
+        ),
+        (isLastRow:boolean):Move[] => isLastRow ? mapIntoPromotions(move) as Move[] : [move]
+    ),
+    defaultTo(() => [] as Move[])
 );
 
 const isDoubleMoveAtFile = (color: PieceColor, expectedFile:AlphabeticCoordinate, move:Move) => pipe(
@@ -135,26 +137,26 @@ const isDoubleMoveAtFile = (color: PieceColor, expectedFile:AlphabeticCoordinate
 );
 
 interface LREnopassantDeps {
-    toSide: (sq: Square) => Option<Square>,
-    takeWhenWhite: (sq: Square) => Option<Square>,
-    takeWhenBlack: (sq: Square) => Option<Square>,
+    toSide: (sq: Square) => Nullable<Square>,
+    takeWhenWhite: (sq: Square) => Nullable<Square>,
+    takeWhenBlack: (sq: Square) => Nullable<Square>,
 };
 
-const lrEnPassant =  (deps: LREnopassantDeps) => (square: Square) => (board:Board, moveHistory: MoveHistory):Option<Move> =>{
+const lrEnPassant =  (deps: LREnopassantDeps) => (square: Square) => (board:Board, moveHistory: MoveHistory):Nullable<Move> =>{
     const {toSide, takeWhenWhite, takeWhenBlack} = deps;
 
-    return pipe(
-        doOption,
-        bind('sideFile', () => pipe(
+    return pipeUntilNull(
+        {},
+        bindNullable('sideFile', (_: {}): Nullable<AlphabeticCoordinate> => pipe(
             toSide(square),
-            mapOption(getFile)
+            mapNullable(getFile)
         )),
-        bind('lastMove', () => getLastMove(moveHistory)),
-        bind('pieceColor', () => getPieceColorAt(board, square)),
-        filterOption(({sideFile, pieceColor, lastMove}) => 
+        bindNullable<{sideFile: AlphabeticCoordinate}, 'lastMove', Move>('lastMove', () => getLastMove(moveHistory)),
+        bindNullable<{sideFile: AlphabeticCoordinate, lastMove: Move}, 'pieceColor', PieceColor>('pieceColor', () => getPieceColorAt(board, square)),
+        guardNullable<{sideFile: AlphabeticCoordinate, pieceColor:PieceColor, lastMove: Move}>(({sideFile, pieceColor, lastMove}) => 
             isDoubleMoveAtFile(reversePieceColor(pieceColor), sideFile, lastMove)),
-        bind('destination', ({pieceColor}) => pieceColor === PieceColor.White ? takeWhenWhite(square) : takeWhenBlack(square)),
-        mapOption(({destination}) => createEnPassant(square, destination))
+        bindNullable<{sideFile: AlphabeticCoordinate, pieceColor:PieceColor, lastMove: Move}, 'destination', Square>('destination', ({pieceColor}) => pieceColor === PieceColor.White ? takeWhenWhite(square) : takeWhenBlack(square)),
+        ({destination}) => createEnPassant(square, destination)
     );
 }
     
@@ -172,30 +174,23 @@ const rightEnPassant = lrEnPassant({
 
 const enPassant = (square: Square, board:Board, moveHistory:MoveHistory):Move[] => pipe(
     [leftEnPassant(square)(board, moveHistory), rightEnPassant(square)(board, moveHistory)],
-    filter(isSome),
-    map(wrappedMove => getOrUndefined(wrappedMove) as Move)
+    filter(isNotNull)
 );
 
-const appendIfSome = <M extends Move>(move:Option<M>) => (moveList: M[]) => 
-    fold(
-        () => moveList,
-        (m:M) => {
-            moveList.push(m);
-            return moveList;
-        }
-    )(move);
+const appendIfNotNull = <M extends Move>(move:Nullable<M>) => (moveList: M[]) => 
+    isNull(move) ? moveList : (moveList.push(move), moveList);
 
 const combineMoves = (square:Square) => (boardAndHistory: [Board, MoveHistory]):Move[] => {
     const [board, moveHistory] = boardAndHistory;
     return pipe(
         [],
-        appendIfSome(pipe(
+        appendIfNotNull(pipe(
             getForwardSingleSquareFromBoard(square, board),
-            mapOption(destinationSqr => createRegularMove(square, destinationSqr))
+            mapNullable(destinationSqr => createRegularMove(square, destinationSqr))
         )),
-        appendIfSome(pipe(
+        appendIfNotNull(pipe(
             getForwardDoubleSquareFromBoard(square, board),
-            mapOption(destinationSqr => createRegularMove(square, destinationSqr))
+            mapNullable(destinationSqr => createRegularMove(square, destinationSqr))
         )),
         appendAll(...getTakingMoves(square, board)),
         map(promote(board)),

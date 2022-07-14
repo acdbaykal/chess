@@ -1,78 +1,78 @@
 
 import { flow, pipe } from "fp-ts/lib/function";
-import { chain as chainOption , Option, map as mapOption, none, some, isSome } from "fp-ts/lib/Option";
 import { cond, equals, filter, range, map } from "ramda";
-import { getOrUndefined } from "../../../lib/option";
+import { isNotNull, mapNullable, Nullable } from "../../../lib/nullable";
 import { createSquare } from "./constructors";
 import { getFile, getRank } from "./getters";
 import { A, AlphabeticCoordinate, NumericCoordinate, H, Square, _1, _8, B, C, D, E, F, G, _2, _3, _4, _5, _6, _7 } from "./Square";
 
 const toSingleRight = (sq:Square) => pipe(
     getFile(sq),
-    cond<AlphabeticCoordinate, Option<AlphabeticCoordinate>>([
-        [equals<AlphabeticCoordinate>(A), () => some(B)],
-        [equals<AlphabeticCoordinate>(B), () => some(C)],
-        [equals<AlphabeticCoordinate>(C), () => some(D)],
-        [equals<AlphabeticCoordinate>(D), () => some(E)],
-        [equals<AlphabeticCoordinate>(E), () => some(F)],
-        [equals<AlphabeticCoordinate>(F), () => some(G)],
-        [equals<AlphabeticCoordinate>(G), () => some(H)],
-        [equals<AlphabeticCoordinate>(H), () => none]
+    cond<AlphabeticCoordinate, Nullable<AlphabeticCoordinate>>([
+        [equals<AlphabeticCoordinate>(A), () => B],
+        [equals<AlphabeticCoordinate>(B), () => C],
+        [equals<AlphabeticCoordinate>(C), () => D],
+        [equals<AlphabeticCoordinate>(D), () => E],
+        [equals<AlphabeticCoordinate>(E), () => F],
+        [equals<AlphabeticCoordinate>(F), () => G],
+        [equals<AlphabeticCoordinate>(G), () => H],
+        [equals<AlphabeticCoordinate>(H), () => undefined]
     ]),
-    mapOption(aplhCoord => createSquare(aplhCoord, getRank(sq)))
+    mapNullable(aplhCoord => createSquare(aplhCoord, getRank(sq)))
 ); 
 
 const toSingleLeft = (sq:Square) => pipe(
     getFile(sq),
-    cond<AlphabeticCoordinate, Option<AlphabeticCoordinate>>([
-        [equals<AlphabeticCoordinate>(H), () => some(G)],
-        [equals<AlphabeticCoordinate>(G), () => some(F)],
-        [equals<AlphabeticCoordinate>(F), () => some(E)],
-        [equals<AlphabeticCoordinate>(E), () => some(D)],
-        [equals<AlphabeticCoordinate>(D), () => some(C)],
-        [equals<AlphabeticCoordinate>(C), () => some(B)],
-        [equals<AlphabeticCoordinate>(B), () => some(A)],
-        [equals<AlphabeticCoordinate>(A), () => none]
+    cond<AlphabeticCoordinate, Nullable<AlphabeticCoordinate>>([
+        [equals<AlphabeticCoordinate>(H), () => G],
+        [equals<AlphabeticCoordinate>(G), () => F],
+        [equals<AlphabeticCoordinate>(F), () => E],
+        [equals<AlphabeticCoordinate>(E), () => D],
+        [equals<AlphabeticCoordinate>(D), () => C],
+        [equals<AlphabeticCoordinate>(C), () => B],
+        [equals<AlphabeticCoordinate>(B), () => A],
+        [equals<AlphabeticCoordinate>(A), () => undefined]
     ]),
-    mapOption(aplhCoord => createSquare(aplhCoord, getRank(sq)))
+    mapNullable(aplhCoord => createSquare(aplhCoord, getRank(sq)))
 ); 
 
 const toSingleUpper = (sq:Square) => pipe(
     getRank(sq),
-    cond<NumericCoordinate, Option<NumericCoordinate>>([
-        [equals<NumericCoordinate>(_1), () => some(_2)],
-        [equals<NumericCoordinate>(_2), () => some(_3)],
-        [equals<NumericCoordinate>(_3), () => some(_4)],
-        [equals<NumericCoordinate>(_4), () => some(_5)],
-        [equals<NumericCoordinate>(_5), () => some(_6)],
-        [equals<NumericCoordinate>(_6), () => some(_7)],
-        [equals<NumericCoordinate>(_7), () => some(_8)],
-        [equals<NumericCoordinate>(_8), () => none]
+    cond<NumericCoordinate, Nullable<NumericCoordinate>>([
+        [equals<NumericCoordinate>(_1), () => _2],
+        [equals<NumericCoordinate>(_2), () => _3],
+        [equals<NumericCoordinate>(_3), () => _4],
+        [equals<NumericCoordinate>(_4), () => _5],
+        [equals<NumericCoordinate>(_5), () => _6],
+        [equals<NumericCoordinate>(_6), () => _7],
+        [equals<NumericCoordinate>(_7), () => _8],
+        [equals<NumericCoordinate>(_8), () => undefined]
     ]),
-    mapOption(numCoord => createSquare(getFile(sq), numCoord))
+    mapNullable(numCoord => createSquare(getFile(sq), numCoord))
 ); 
 
 const toSingleLower = (sq:Square) => pipe(
     getRank(sq),
-    cond<NumericCoordinate, Option<NumericCoordinate>>([
-        [equals<NumericCoordinate>(_8), () => some(_7)],
-        [equals<NumericCoordinate>(_7), () => some(_6)],
-        [equals<NumericCoordinate>(_6), () => some(_5)],
-        [equals<NumericCoordinate>(_5), () => some(_4)],
-        [equals<NumericCoordinate>(_4), () => some(_3)],
-        [equals<NumericCoordinate>(_3), () => some(_2)],
-        [equals<NumericCoordinate>(_2), () => some(_1)],
-        [equals<NumericCoordinate>(_1), () => none]
+    cond<NumericCoordinate, Nullable<NumericCoordinate>>([
+        [equals<NumericCoordinate>(_8), () => _7],
+        [equals<NumericCoordinate>(_7), () => _6],
+        [equals<NumericCoordinate>(_6), () => _5],
+        [equals<NumericCoordinate>(_5), () => _4],
+        [equals<NumericCoordinate>(_4), () => _3],
+        [equals<NumericCoordinate>(_3), () => _2],
+        [equals<NumericCoordinate>(_2), () => _1],
+        [equals<NumericCoordinate>(_1), () => undefined]
     ]),
-    mapOption(numCoord => createSquare(getFile(sq), numCoord))
+    mapNullable(numCoord => createSquare(getFile(sq), numCoord))
 );
 
-type MoveAmount = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export type MoveAmount = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
-type MoveSingleStepFn = (s:Square) => Option<Square>;
+type MoveSingleStepFn = (s:Square) => Nullable<Square>;
 
-const moveTo = (moveSingleStep: MoveSingleStepFn) => (amount: MoveAmount) => (sq: Square): Option<Square> =>
-    range(0, amount).reduce(chainOption(moveSingleStep), some(sq));
+
+const moveTo = (moveSingleStep: MoveSingleStepFn) => (amount: MoveAmount) => (sq: Square): Nullable<Square> =>
+    range(0, amount).reduce((acc) => mapNullable(moveSingleStep)(acc), sq as Nullable<Square>)
 
 export const toRight = moveTo(toSingleRight);
 export const toLeft = moveTo(toSingleLeft);
@@ -81,22 +81,22 @@ export const toLower = moveTo(toSingleLower);
 
 export const toUpRight = flow(
     toSingleUpper,
-    chainOption(toSingleRight)
+    mapNullable(toSingleRight)
 );
 
 export const toUpLeft = flow(
     toSingleUpper,
-    chainOption(toSingleLeft)
+    mapNullable(toSingleLeft)
 );
 
 export const toBottomRight = flow(
     toSingleLower,
-    chainOption(toSingleRight)
+    mapNullable(toSingleRight)
 );
 
 export const toBottomLeft = flow(
     toSingleLower,
-    chainOption(toSingleLeft)
+    mapNullable(toSingleLeft)
 );
 
 const NeighborFunctions = [
@@ -114,6 +114,5 @@ export const calcNeighbors = (square: Square): Square[] =>
     pipe(
         NeighborFunctions,
         map(fn => fn(square)),
-        filter((sq:Option<Square>):boolean => isSome(sq)),
-        map((sq: Option<Square>):Square =>  getOrUndefined(sq) as Square),
-    );
+        filter<Nullable<Square>>(isNotNull),
+    ) as Square[];

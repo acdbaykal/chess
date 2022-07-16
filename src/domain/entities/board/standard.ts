@@ -4,7 +4,7 @@ import { createSquare } from "../square/constructors";
 import { A, B, C, D, E, F, G, H, _1, _2, _7, _8 } from "../square/Square";
 import { createBoardFromList } from "./constructors";
 
-export const STANDART_INITIAL_POSITION = createBoardFromList([
+export const STANDARD_INITIAL_POSITION = createBoardFromList([
     [createSquare(A, _1), createPiece(PieceColor.White, PieceType.Rook)],
     [createSquare(B, _1), createPiece(PieceColor.White, PieceType.Knight)],
     [createSquare(C, _1), createPiece(PieceColor.White, PieceType.Bishop)],

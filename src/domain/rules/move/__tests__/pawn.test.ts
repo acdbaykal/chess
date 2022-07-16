@@ -1,6 +1,6 @@
 import { pipe } from 'fp-ts/lib/function';
 import { createBoardFromList } from '../../../entities/board/constructors';
-import { STANDART_INITIAL_POSITION } from '../../../entities/board/standard';
+import { STANDARD_INITIAL_POSITION } from '../../../entities/board/standard';
 import { createGame } from '../../../entities/game/constructors';
 import { createEnPassant, createPromotion, createRegularMove } from '../../../entities/move/constructors';
 import { getMoveFrom, isSameMoveAs } from '../../../entities/move/getters';
@@ -300,7 +300,7 @@ describe('domain/rule/move/pawn', () => {
     describe('en passant', () => {
         describe('when applicable', () => {
             const test = (moveHistory: MoveHistory, enPassant: EnPassant) => {
-                const game = createGame(STANDART_INITIAL_POSITION, moveHistory);
+                const game = createGame(STANDARD_INITIAL_POSITION, moveHistory);
     
                 const legalMoves = pipe(
                     getLegalMoves(game, getMoveFrom(enPassant)),
@@ -464,7 +464,7 @@ describe('domain/rule/move/pawn', () => {
                     createSquare(C, _3)
                 );
 
-                const game = createGame(STANDART_INITIAL_POSITION, moveHistory);
+                const game = createGame(STANDARD_INITIAL_POSITION, moveHistory);
     
                 const legalMoves = pipe(
                     getLegalMoves(game, getMoveFrom(enPassant)),
@@ -516,7 +516,7 @@ describe('domain/rule/move/pawn', () => {
                 ]);
 
                 const test = (enPassant: EnPassant) => {
-                    const game = createGame(STANDART_INITIAL_POSITION, moveHistory);
+                    const game = createGame(STANDARD_INITIAL_POSITION, moveHistory);
     
                     const legalMoves = pipe(
                         getLegalMoves(game, getMoveFrom(enPassant)),
@@ -568,7 +568,7 @@ describe('domain/rule/move/pawn', () => {
                     createSquare(E, _5)
                 );
 
-                const game = createGame(STANDART_INITIAL_POSITION, moveHistory);
+                const game = createGame(STANDARD_INITIAL_POSITION, moveHistory);
 
                 const legalMoves = pipe(
                     getLegalMoves(game, getMoveFrom(enPassant)),
@@ -608,7 +608,7 @@ describe('domain/rule/move/pawn', () => {
                     createSquare(E, _3)
                 );
 
-                const game = createGame(STANDART_INITIAL_POSITION, moveHistory);
+                const game = createGame(STANDARD_INITIAL_POSITION, moveHistory);
 
                 const legalMoves = pipe(
                     getLegalMoves(game, getMoveFrom(enPassant)),
@@ -648,7 +648,7 @@ describe('domain/rule/move/pawn', () => {
                     createSquare(E, _3)
                 );
 
-                const game = createGame(STANDART_INITIAL_POSITION, moveHistory);
+                const game = createGame(STANDARD_INITIAL_POSITION, moveHistory);
 
                 const legalMoves = pipe(
                     getLegalMoves(game, getMoveFrom(enPassant)),

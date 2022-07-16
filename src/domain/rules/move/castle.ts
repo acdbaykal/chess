@@ -1,18 +1,40 @@
-// import { flow, pipe } from "fp-ts/lib/function";
-// import { Board, EMPTY_BOARD } from "../../entities/board/Board";
-// import { getPieceAt, getSquaresForPiece } from "../../entities/board/getters";
-// import { getMoveFrom, getMoveTo } from "../../entities/move/getters";
-// import { Move } from "../../entities/move/Move";
-// import { isBlackPiece, isKing } from "../../entities/piece/getters";
-// import * as O from "fp-ts/Option";
-// import * as E from 'fp-ts/Either';
-// import { createPiece, Piece, PieceColor, PieceType } from "../../entities/piece/Piece";
-// import { getNumericAxis, isLeftOf, isRightOf, squareEquals, toString } from "../../entities/square/getters";
-// import { C, createSquare, G, Square, _1, _8 } from "../../entities/square/Square";
-// import { Game } from "../../entities/game/Game";
-// import { getCurrentBoard, getInitialBoard, getInitialSquaresForPiece, hasPieceMoved } from "../../entities/game/getters";
-// import {and} from "../../../lib/boolean-logic";
-// import { sequenceS } from "fp-ts/lib/Apply";
+import { pipe } from "fp-ts/lib/function";
+import { getOrFalse, logLeft } from "../../../lib/either";
+import { Game } from "../../entities/game/Game"
+import { getInitialBoard, getMovesHistory, hasPieceMoved } from "../../entities/game/getters";
+import { getKingsSquare } from "../../entities/board/getters";
+import { createCastling } from "../../entities/move/constructors";
+import { getActiveColor } from "../../entities/movehistory/getters";
+import { PieceColor } from "../../entities/piece/Piece";
+import { createSquare } from "../../entities/square/constructors";
+import { G, _1, _8 } from "../../entities/square/Square";
+import { isNull } from "../../../lib/nullable";
+
+export const getLegalMoves = (game:Game) => {
+
+    const moveHistory = getMovesHistory(game);
+    const initialBoard = getInitialBoard(game);
+    const kingColor = getActiveColor(moveHistory);
+    const initialKingPosition = getKingsSquare(initialBoard, kingColor);
+
+    if(isNull(initialKingPosition)){
+        throw new Error(`Illegal board without a ${kingColor} king.`);
+    }
+
+    const kingDestination = kingColor === PieceColor.White
+        ? createSquare(G, _1)
+        : createSquare(G, _8);
+
+    return pipe(
+        hasPieceMoved(game, initialKingPosition),
+        logLeft,
+        getOrFalse,
+        hasMoved => 
+            hasMoved
+                ? []
+                : [createCastling(initialKingPosition, kingDestination)]
+    );
+}
 
 // const combineEither = sequenceS(E.Apply);
 
@@ -112,3 +134,4 @@
 //     )();
 
 // }
+    

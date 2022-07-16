@@ -2,7 +2,7 @@ import { A, Square, _1, _2 } from "../square/Square";
 import { Castling, EnPassant, Move, MoveType, Promotion, PromotionPieceType, RegularMove } from "./Move";
 import { Record } from "immutable";
 import { createSquare } from "../square/constructors";
-import { PieceType } from "../piece/Piece";
+import { PieceColor, PieceType } from "../piece/Piece";
 
 
 const RegularMoveFactory = Record<RegularMove>({
@@ -41,7 +41,6 @@ export const createEnPassant = (from: Square, to: Square): EnPassant =>
 
 export const createCastling = (from: Square, to: Square):Castling =>
     CastlingMoveFactory({from, to});
-   
     
 export const createMoveList = (start: Square) => (destinations: (Square | [Square, PromotionPieceType])[]): Move[] =>
     destinations.map(

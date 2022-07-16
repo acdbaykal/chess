@@ -11,6 +11,7 @@ import { logLeft } from "../../../lib/either";
 import { createPiece } from "../piece/constructors";
 import { filter, map } from 'ramda';
 import { flowUntilNull, flowWithFallback, isNotNull, Nullable } from "../../../lib/nullable";
+import { getInitialSquaresForPiece } from "../game/getters";
 
 export const getPieceAt = (board: Board, square: Square): Nullable<Piece> => {
     const key = SqGetters.toString(square);
@@ -82,6 +83,11 @@ export const getSquaresForPiece = (board: Board, piece: Piece): Square[] => {
         .filter(E.isRight)
         .map(E.getOrElse(() => createSquare(A, _1)));
 }
+
+export const getKingsSquare = (board: Board, kingColor: PieceColor): Nullable<Square> => {
+    const squares = getSquaresForPiece(board, createPiece(kingColor, PieceType.King));
+    return squares[0];
+};
 
 export const asList = (board:Board): [Square, Piece][] =>
     Object.entries(board).map(

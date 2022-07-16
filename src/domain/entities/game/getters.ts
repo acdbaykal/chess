@@ -25,7 +25,7 @@ export const hasPieceMoved = (game: Game, startingPosition: Square): E.Either<Er
     
     return pipe(
         getMovesHistory(game),
-        any(flow(
+        moveHist => moveHist.some(flow(
             getMoveFrom,
             squareEquals(startingPosition)
         )),

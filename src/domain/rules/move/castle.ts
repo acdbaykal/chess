@@ -25,11 +25,11 @@ const createCastlingFn = (navigate: NavigateFn, destinationFile: AlphabeticCoord
     
     // Make sure there is no piece between the king and the rook
     while(isNotNull(currentSquare = navigate(currentSquare))) {
-        const pieceAtLeft = getPieceAt(board, currentSquare);
+        const pieceAtSquare = getPieceAt(board, currentSquare);
 
-        if(isNull(pieceAtLeft)){
+        if(isNull(pieceAtSquare)){
             continue;
-        } else if(equalsToPiece(pieceAtLeft)(rook)){
+        } else if(equalsToPiece(pieceAtSquare)(rook)){
             const kingDestination = kingColor === PieceColor.White
                 ? createSquare(destinationFile, _1)
                 : createSquare(destinationFile, _8); 

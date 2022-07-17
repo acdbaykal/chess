@@ -7,28 +7,32 @@ import { createCastling } from "../../entities/move/constructors";
 import { getActiveColor } from "../../entities/movehistory/getters";
 import { PieceColor, PieceType } from "../../entities/piece/Piece";
 import { createSquare } from "../../entities/square/constructors";
-import { G, Square, _1, _8 } from "../../entities/square/Square";
+import { AlphabeticCoordinate, C, G, Square, _1, _8 } from "../../entities/square/Square";
 import { isNotNull, isNull, Nullable } from "../../../lib/nullable";
 import { Castling } from "../../entities/move/Move";
-import { toSingleRight } from "../../entities/square/transitions";
+import { toSingleLeft, toSingleRight } from "../../entities/square/transitions";
 import { createPiece } from "../../entities/piece/constructors";
 import { Board } from "../../entities/board/Board";
 import {bind, Do as doEither, getOrElse, map} from 'fp-ts/Either'
 import {equalsToPiece} from '../../entities/piece/getters';
 
-const createShortCastling = (game:Game, board: Board, kingColor:PieceColor, kingPosition: Square): Nullable<Castling> => {
-    let right: Nullable<Square> = kingPosition;
+type NavigateFn = (sq: Square) => Nullable<Square>;
+
+const createCastlingFn = (navigate: NavigateFn, destinationFile: AlphabeticCoordinate) => 
+(board: Board, kingColor:PieceColor, kingPosition: Square): Nullable<Castling> => {
+    let currentSquare: Nullable<Square> = kingPosition;
     const rook = createPiece(kingColor, PieceType.Rook);
     
-    while(isNotNull(right = toSingleRight(right))) {
-        const pieceAtLeft = getPieceAt(board, right);
+    // Make sure there is no piece between the king and the rook
+    while(isNotNull(currentSquare = navigate(currentSquare))) {
+        const pieceAtLeft = getPieceAt(board, currentSquare);
 
         if(isNull(pieceAtLeft)){
             continue;
         } else if(equalsToPiece(pieceAtLeft)(rook)){
             const kingDestination = kingColor === PieceColor.White
-                ? createSquare(G, _1)
-                : createSquare(G, _8); 
+                ? createSquare(destinationFile, _1)
+                : createSquare(destinationFile, _8); 
 
             return createCastling(kingPosition, kingDestination);
         } else {
@@ -38,6 +42,10 @@ const createShortCastling = (game:Game, board: Board, kingColor:PieceColor, king
     
     return undefined;
 }
+
+
+const createLongCastling = createCastlingFn(toSingleLeft, C);
+const createShortCastling = createCastlingFn(toSingleRight, G);
 
 export const getLegalMoves = (game:Game) => {
 
@@ -62,8 +70,10 @@ export const getLegalMoves = (game:Game) => {
         map(
             ({hasKingMoved, board}) => hasKingMoved
                 ? []
-                : [createShortCastling(game, board, kingColor, initialKingPosition)]
-                    .filter(isNotNull)
+                : [
+                    createShortCastling(board, kingColor, initialKingPosition),
+                    createLongCastling(board, kingColor, initialKingPosition)
+                ].filter(isNotNull)
         ),
         getOrElse(() => [] as Castling[]) 
     );

@@ -6,6 +6,10 @@ import { createSquare } from "../../../entities/square/constructors";
 import { A, B, C, D, E, F, G, _1, _2, _3, _4, _5, _6, _7, _8 } from "../../../entities/square/Square";
 import {STANDARD_INITIAL_POSITION} from '../../../entities/board/standard';
 import {getLegalMoves} from '../castle';
+import { boardToString } from "../../../entities/board/conversions";
+import { pipe } from "fp-ts/lib/function";
+import { getCurrentBoard } from "../../../entities/game/getters";
+import { getOrElse } from "fp-ts/lib/Either";
 
 describe('domain/rules/move/castle', () => {
     it('returns an empty array when the white king has moved', () => {
@@ -65,6 +69,34 @@ describe('domain/rules/move/castle', () => {
         const castlingMoves = getLegalMoves(game);
         expect(castlingMoves).toEqual([
             createCastling(createSquare(E, _1), createSquare(G, _1))
+        ]);
+    });
+
+    it('returns long castling move for white king when applicable', () => {
+        const moveHistory: MoveHistory = createMoveHistory([ 
+            createRegularMove(createSquare(E, _2), createSquare(E, _4)),
+            createRegularMove(createSquare(C, _7), createSquare(C, _5)),
+            createRegularMove(createSquare(G, _1), createSquare(F, _3)),
+            createRegularMove(createSquare(D, _7), createSquare(D, _6)),
+            createRegularMove(createSquare(D, _2), createSquare(D, _4)),
+            createRegularMove(createSquare(C, _5), createSquare(D, _4)),
+            createRegularMove(createSquare(F, _3), createSquare(D, _4)),
+            createRegularMove(createSquare(G, _8), createSquare(F, _6)),
+            createRegularMove(createSquare(B, _1), createSquare(C, _3)),
+            createRegularMove(createSquare(A, _7), createSquare(A, _6)),
+            createRegularMove(createSquare(C, _1), createSquare(G, _5)),
+            createRegularMove(createSquare(E, _7), createSquare(E, _6)),
+            createRegularMove(createSquare(F, _2), createSquare(F, _4)),
+            createRegularMove(createSquare(F, _8), createSquare(E, _7)),
+            createRegularMove(createSquare(D, _1), createSquare(F, _3)),
+            createRegularMove(createSquare(D, _8), createSquare(C, _7)),
+        ]);
+
+        const game = createGame(STANDARD_INITIAL_POSITION, moveHistory);
+
+        const castlingMoves = getLegalMoves(game);
+        expect(castlingMoves).toEqual([
+            createCastling(createSquare(E, _1), createSquare(C, _1))
         ]);
     });
 

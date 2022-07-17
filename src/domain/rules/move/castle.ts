@@ -1,14 +1,43 @@
 import { pipe } from "fp-ts/lib/function";
-import { getOrFalse, logLeft } from "../../../lib/either";
+import { logLeft } from "../../../lib/either";
 import { Game } from "../../entities/game/Game"
-import { getInitialBoard, getMovesHistory, hasPieceMoved } from "../../entities/game/getters";
-import { getKingsSquare } from "../../entities/board/getters";
+import { getCurrentBoard, getInitialBoard, getMovesHistory, hasPieceMoved } from "../../entities/game/getters";
+import { getKingsSquare, getPieceAt } from "../../entities/board/getters";
 import { createCastling } from "../../entities/move/constructors";
 import { getActiveColor } from "../../entities/movehistory/getters";
-import { PieceColor } from "../../entities/piece/Piece";
+import { PieceColor, PieceType } from "../../entities/piece/Piece";
 import { createSquare } from "../../entities/square/constructors";
-import { G, _1, _8 } from "../../entities/square/Square";
-import { isNull } from "../../../lib/nullable";
+import { G, Square, _1, _8 } from "../../entities/square/Square";
+import { isNotNull, isNull, Nullable } from "../../../lib/nullable";
+import { Castling } from "../../entities/move/Move";
+import { toSingleRight } from "../../entities/square/transitions";
+import { createPiece } from "../../entities/piece/constructors";
+import { Board } from "../../entities/board/Board";
+import {bind, Do as doEither, getOrElse, map} from 'fp-ts/Either'
+import {equalsToPiece} from '../../entities/piece/getters';
+
+const createShortCastling = (game:Game, board: Board, kingColor:PieceColor, kingPosition: Square): Nullable<Castling> => {
+    let right: Nullable<Square> = kingPosition;
+    const rook = createPiece(kingColor, PieceType.Rook);
+    
+    while(isNotNull(right = toSingleRight(right))) {
+        const pieceAtLeft = getPieceAt(board, right);
+
+        if(isNull(pieceAtLeft)){
+            continue;
+        } else if(equalsToPiece(pieceAtLeft)(rook)){
+            const kingDestination = kingColor === PieceColor.White
+                ? createSquare(G, _1)
+                : createSquare(G, _8); 
+
+            return createCastling(kingPosition, kingDestination);
+        } else {
+            return undefined;
+        }
+    }
+    
+    return undefined;
+}
 
 export const getLegalMoves = (game:Game) => {
 
@@ -26,13 +55,17 @@ export const getLegalMoves = (game:Game) => {
         : createSquare(G, _8);
 
     return pipe(
-        hasPieceMoved(game, initialKingPosition),
+        doEither,
+        bind('hasKingMoved', () => hasPieceMoved(game, initialKingPosition)),
+        bind('board', () => getCurrentBoard(game)),
         logLeft,
-        getOrFalse,
-        hasMoved => 
-            hasMoved
+        map(
+            ({hasKingMoved, board}) => hasKingMoved
                 ? []
-                : [createCastling(initialKingPosition, kingDestination)]
+                : [createShortCastling(game, board, kingColor, initialKingPosition)]
+                    .filter(isNotNull)
+        ),
+        getOrElse(() => [] as Castling[]) 
     );
 }
 

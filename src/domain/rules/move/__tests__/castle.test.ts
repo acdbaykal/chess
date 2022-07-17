@@ -33,6 +33,19 @@ describe('domain/rules/move/castle', () => {
         expect(castlingMoves).toEqual([]);
     });
 
+    it('does not include short castlinbg when there is a piece beween the king and the rook', () => {
+        const moveHistory: MoveHistory = createMoveHistory([
+            createRegularMove(createSquare(G, _1), createSquare(F, _3)),
+            createRegularMove(createSquare(E, _7), createSquare(E, _5))
+        ]);
+
+        const game = createGame(STANDARD_INITIAL_POSITION, moveHistory);
+
+        const castlingMoves = getLegalMoves(game);
+
+        expect(castlingMoves).toEqual([]);
+    })
+
     it('returns short castling move for white king when applicable', () => {
         const moveHistory: MoveHistory = createMoveHistory([ 
             createRegularMove(createSquare(E, _2), createSquare(E, _4)),

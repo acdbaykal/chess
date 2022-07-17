@@ -6,7 +6,7 @@ import { createSquare } from "./constructors";
 import { getFile, getRank } from "./getters";
 import { A, AlphabeticCoordinate, NumericCoordinate, H, Square, _1, _8, B, C, D, E, F, G, _2, _3, _4, _5, _6, _7 } from "./Square";
 
-const toSingleRight = (sq:Square) => pipe(
+export const toSingleRight = (sq:Square) => pipe(
     getFile(sq),
     cond<AlphabeticCoordinate, Nullable<AlphabeticCoordinate>>([
         [equals<AlphabeticCoordinate>(A), () => B],
@@ -21,7 +21,7 @@ const toSingleRight = (sq:Square) => pipe(
     mapNullable(aplhCoord => createSquare(aplhCoord, getRank(sq)))
 ); 
 
-const toSingleLeft = (sq:Square) => pipe(
+export const toSingleLeft = (sq:Square) => pipe(
     getFile(sq),
     cond<AlphabeticCoordinate, Nullable<AlphabeticCoordinate>>([
         [equals<AlphabeticCoordinate>(H), () => G],

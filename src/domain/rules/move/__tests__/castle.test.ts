@@ -3,13 +3,14 @@ import { createCastling, createRegularMove } from "../../../entities/move/constr
 import { createMoveHistory } from "../../../entities/movehistory/constructors";
 import { MoveHistory } from "../../../entities/movehistory/MoveHistory";
 import { createSquare } from "../../../entities/square/constructors";
-import { A, B, C, D, E, F, G, _1, _2, _3, _4, _5, _6, _7, _8 } from "../../../entities/square/Square";
+import { A, B, C, D, E, F, G, H, _1, _2, _3, _4, _5, _6, _7, _8 } from "../../../entities/square/Square";
 import {STANDARD_INITIAL_POSITION} from '../../../entities/board/standard';
 import {getLegalMoves} from '../castle';
 import { boardToString } from "../../../entities/board/conversions";
 import { pipe } from "fp-ts/lib/function";
 import { getCurrentBoard } from "../../../entities/game/getters";
-import { getOrElse } from "fp-ts/lib/Either";
+import { getOrElse, map } from "fp-ts/lib/Either";
+import { getOrUndefined } from "../../../../lib/either";
 
 describe('domain/rules/move/castle', () => {
     it('returns an empty array when the white king has moved', () => {
@@ -133,6 +134,28 @@ describe('domain/rules/move/castle', () => {
             createRegularMove(createSquare(D, _2), createSquare(D, _3)),
             createRegularMove(createSquare(E, _7), createSquare(E, _8)),
             createRegularMove(createSquare(C, _1), createSquare(G, _5))
+        ]);
+
+        const game = createGame(STANDARD_INITIAL_POSITION, moveHistory);
+
+        const castlingMoves = getLegalMoves(game);
+        expect(castlingMoves).toEqual([]);
+    });
+
+    it('does not include short castle when the rook has moved', () => {
+        const moveHistory: MoveHistory = createMoveHistory([ 
+            createRegularMove(createSquare(E, _2), createSquare(E, _4)),
+            createRegularMove(createSquare(E, _7), createSquare(E, _5)),
+            createRegularMove(createSquare(H, _2), createSquare(H, _4)),
+            createRegularMove(createSquare(B, _8), createSquare(C, _6)),
+            createRegularMove(createSquare(H, _1), createSquare(H, _3)),
+            createRegularMove(createSquare(D, _7), createSquare(D, _6)),
+            createRegularMove(createSquare(H, _3), createSquare(H, _1)),
+            createRegularMove(createSquare(G, _8), createSquare(F, _6)),
+            createRegularMove(createSquare(F, _1), createSquare(C, _4)),
+            createRegularMove(createSquare(F, _6), createSquare(E, _4)),
+            createRegularMove(createSquare(G, _1), createSquare(F, _3)),
+            createRegularMove(createSquare(F, _8), createSquare(E, _7))
         ]);
 
         const game = createGame(STANDARD_INITIAL_POSITION, moveHistory);

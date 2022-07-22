@@ -1,8 +1,8 @@
-import { pipe } from "fp-ts/lib/function";
-import { logLeft } from "../../../lib/either";
+import { flow, pipe } from "fp-ts/lib/function";
+import { getOrTrue, logLeft } from "../../../lib/either";
 import { Game } from "../../entities/game/Game"
 import { getCurrentBoard, getInitialBoard, getMovesHistory, hasPieceMoved } from "../../entities/game/getters";
-import { getKingsSquare, getPieceAt } from "../../entities/board/getters";
+import { getKingsSquare, getPieceAt, getPositions } from "../../entities/board/getters";
 import { createCastling } from "../../entities/move/constructors";
 import { getActiveColor } from "../../entities/movehistory/getters";
 import { PieceColor, PieceType } from "../../entities/piece/Piece";
@@ -15,11 +15,12 @@ import { createPiece } from "../../entities/piece/constructors";
 import { Board } from "../../entities/board/Board";
 import {bind, Do as doEither, getOrElse, map} from 'fp-ts/Either'
 import {equalsToPiece} from '../../entities/piece/getters';
+import { isLeftOf, isRightOf } from "../../entities/square/getters";
 
 type NavigateFn = (sq: Square) => Nullable<Square>;
 
 const createCastlingFn = (navigate: NavigateFn, destinationFile: AlphabeticCoordinate) => 
-(board: Board, kingColor:PieceColor, kingPosition: Square): Nullable<Castling> => {
+(game: Game, board: Board, kingColor:PieceColor, kingPosition: Square): Nullable<Castling> => {
     let currentSquare: Nullable<Square> = kingPosition;
     const rook = createPiece(kingColor, PieceType.Rook);
     
@@ -44,8 +45,30 @@ const createCastlingFn = (navigate: NavigateFn, destinationFile: AlphabeticCoord
 }
 
 
+
+const findRookPositions = (initialBoard: Board, color: PieceColor, kingPosition: Square) => {
+    const rookPositions = getPositions(initialBoard)(createPiece(color, PieceType.Rook));
+    const shortRook = rookPositions.find(isRightOf(kingPosition));
+    const longRook = rookPositions.find(isLeftOf(kingPosition));
+    return {
+        shortRook,
+        longRook
+    };
+}
+    
+
 const createLongCastling = createCastlingFn(toSingleLeft, C);
 const createShortCastling = createCastlingFn(toSingleRight, G);
+const _hasPieceMoved = flow(
+    hasPieceMoved,
+    getOrTrue
+);
+
+const createCastlingWheNotMoved = (game: Game, rookSquare: Nullable<Square>, createCastling: typeof createShortCastling) => {
+    return isNotNull(rookSquare) && !_hasPieceMoved(game, rookSquare)
+        ? createCastling
+        : () => undefined
+}
 
 export const getLegalMoves = (game:Game) => {
 
@@ -62,6 +85,9 @@ export const getLegalMoves = (game:Game) => {
         ? createSquare(G, _1)
         : createSquare(G, _8);
 
+    const rookPositions = findRookPositions(initialBoard, kingColor, initialKingPosition);
+    const _createShortCastling = createCastlingWheNotMoved(game, rookPositions.shortRook, createShortCastling);
+
     return pipe(
         doEither,
         bind('hasKingMoved', () => hasPieceMoved(game, initialKingPosition)),
@@ -71,8 +97,8 @@ export const getLegalMoves = (game:Game) => {
             ({hasKingMoved, board}) => hasKingMoved
                 ? []
                 : [
-                    createShortCastling(board, kingColor, initialKingPosition),
-                    createLongCastling(board, kingColor, initialKingPosition)
+                    _createShortCastling(game, board, kingColor, initialKingPosition),
+                    createLongCastling(game, board, kingColor, initialKingPosition)
                 ].filter(isNotNull)
         ),
         getOrElse(() => [] as Castling[]) 

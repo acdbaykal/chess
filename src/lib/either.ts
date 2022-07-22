@@ -23,6 +23,8 @@ export const logLeft = <L, R>(either: E.Either<L, R>):E.Either<L, R> =>
 
 export const getOrFalse = E.getOrElse(() => false);
 
+export const getOrTrue = E.getOrElse(() => true);
+
 export const assert = <L, Arg>(test: (arg:Arg) => boolean, onLeft: (arg:Arg) => L) => (arg:Arg) : E.Either<L, Arg> =>
     test(arg)
         ? E.right(arg)

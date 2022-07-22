@@ -87,6 +87,7 @@ export const getLegalMoves = (game:Game) => {
 
     const rookPositions = findRookPositions(initialBoard, kingColor, initialKingPosition);
     const _createShortCastling = createCastlingWheNotMoved(game, rookPositions.shortRook, createShortCastling);
+    const _createLongCastling = createCastlingWheNotMoved(game, rookPositions.longRook, createLongCastling);
 
     return pipe(
         doEither,
@@ -98,7 +99,7 @@ export const getLegalMoves = (game:Game) => {
                 ? []
                 : [
                     _createShortCastling(game, board, kingColor, initialKingPosition),
-                    createLongCastling(game, board, kingColor, initialKingPosition)
+                    _createLongCastling(game, board, kingColor, initialKingPosition)
                 ].filter(isNotNull)
         ),
         getOrElse(() => [] as Castling[]) 

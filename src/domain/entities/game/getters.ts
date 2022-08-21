@@ -3,12 +3,12 @@ import { flow, pipe } from "fp-ts/lib/function";
 import { Game } from "./Game";
 import { Square } from "../square/Square";
 import { getSquaresForPiece, isSquareOccupied } from "../board/getters";
-import {any} from 'ramda'
 import { getMoveFrom } from "../move/getters";
 import { squareEquals } from "../square/getters";
 import { applyMoveHistory } from "../board/transitions";
 import { Board } from "../board/Board";
 import { Piece } from "../piece/Piece";
+import { Move } from "../move/Move";
 
 export const getInitialBoard = (game: Game) => game.initialBoard;
 export const getMovesHistory = (game:Game) => game.moveHistory;

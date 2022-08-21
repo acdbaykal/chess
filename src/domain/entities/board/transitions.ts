@@ -2,20 +2,21 @@ import { Board } from "./Board";
 import { Castling, EnPassant, Move, Promotion, RegularMove } from "../move/Move";
 import {omit} from 'ramda';
 import {toString} from '../square/getters';
-import { pipe } from "fp-ts/lib/function";
+import { flow, pipe } from "fp-ts/lib/function";
 import { getMoveFrom, getMoveTo, isPromotionMove, getPromotionPieceType, isRegularMove, isEnPassant, getEnPassantTakeSquare, isCastling, isShortCastling } from "../move/getters";
 import * as Eth from "fp-ts/lib/Either";
 import { getPieceAt, getPieceTypeAt, hasPieceAt } from "./getters";
 import { Square, _1, _2, _3, _4, _5, _6, _7, _8 } from "../square/Square";
-import { Piece, PieceType } from "../piece/Piece";
+import { Piece, PieceColor, PieceType } from "../piece/Piece";
 import { createPiece } from "../piece/constructors";
-import { getPieceColor, isKing } from "../piece/getters";
+import { getPieceColor, isKing, isOfColor } from "../piece/getters";
 import { MoveHistory } from "../movehistory/MoveHistory";
 import { moveToString } from "../move/conversions";
-import { assert, fromNullable } from "../../../lib/either";
+import { assert, fromNullable, getOrUndefined } from "../../../lib/either";
 import { boardToString } from "./conversions";
 import { toLeft, toRight } from "../square/transitions";
 import { isNotNull, Nullable, pipeUntilNull } from "../../../lib/nullable";
+import { fromString } from "../square/constructors";
 
 export const removePiece = (board: Board, square:Square): Board => 
     omit([toString(square)], board);
@@ -163,3 +164,17 @@ export const applyMoveHistory = (board: Board, moveList: MoveHistory):Eth.Either
        chainApplyMove(move)
    ), Eth.right<Error,Board>(board));
 
+
+const getOccupiedSquares = (board:Board): Square[] =>
+    Array.from(Object.getOwnPropertyNames(board))
+        .map(flow(
+            fromString,
+            (sqr: Eth.Either<Error, Square>) => getOrUndefined(sqr) as Square
+        ));
+
+export const getPiecesOfColor = (color:PieceColor) => (board: Board): [Square, Piece][] =>
+   getOccupiedSquares(board)
+        .map(square => [square, getPieceAt(board, square)] as [Square, Piece])
+        .filter(
+            ([,piece]) => isOfColor(color)(piece)
+        );

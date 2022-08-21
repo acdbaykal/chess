@@ -3,7 +3,7 @@ import { getOrTrue, logLeft } from "../../../lib/either";
 import { Game } from "../../entities/game/Game"
 import { getCurrentBoard, getInitialBoard, getMovesHistory, hasPieceMoved } from "../../entities/game/getters";
 import { getKingsSquare, getPieceAt, getPositions } from "../../entities/board/getters";
-import { createCastling } from "../../entities/move/constructors";
+import { createCastling, createRegularMove } from "../../entities/move/constructors";
 import { getActiveColor } from "../../entities/movehistory/getters";
 import { PieceColor, PieceType } from "../../entities/piece/Piece";
 import { createSquare } from "../../entities/square/constructors";
@@ -15,12 +15,13 @@ import { createPiece } from "../../entities/piece/constructors";
 import { Board } from "../../entities/board/Board";
 import {bind, Do as doEither, getOrElse, map} from 'fp-ts/Either'
 import {equalsToPiece} from '../../entities/piece/getters';
-import { isLeftOf, isRightOf } from "../../entities/square/getters";
+import { getFile, isLeftOf, isRightOf } from "../../entities/square/getters";
+import { isInCheck } from "../check";
+import { addMove } from "../../entities/game/transitions";
 
 type NavigateFn = (sq: Square) => Nullable<Square>;
 
-const createCastlingFn = (navigate: NavigateFn, destinationFile: AlphabeticCoordinate) => 
-(game: Game, board: Board, kingColor:PieceColor, kingPosition: Square): Nullable<Castling> => {
+const hasPieceInBetween  = (navigate: NavigateFn, board: Board, kingColor:PieceColor, kingPosition: Square): boolean => {
     let currentSquare: Nullable<Square> = kingPosition;
     const rook = createPiece(kingColor, PieceType.Rook);
     
@@ -31,17 +32,57 @@ const createCastlingFn = (navigate: NavigateFn, destinationFile: AlphabeticCoord
         if(isNull(pieceAtSquare)){
             continue;
         } else if(equalsToPiece(pieceAtSquare)(rook)){
-            const kingDestination = kingColor === PieceColor.White
-                ? createSquare(destinationFile, _1)
-                : createSquare(destinationFile, _8); 
-
-            return createCastling(kingPosition, kingDestination);
+            return false
         } else {
-            return undefined;
+            return true;
         }
     }
+
+    return true;
+}
+
+const isCheckedOnTravel = (navigate: NavigateFn, destinationFile: AlphabeticCoordinate, game: Game, kingColor:PieceColor, kingPosition: Square):boolean => {
+    let currentSquare = kingPosition;
+    let travelGame = game;
+
+    while(getFile(currentSquare) !== destinationFile){
+        if(isInCheck(travelGame, kingColor)){
+            return true;
+        }
+
+        const nextSquare = navigate(currentSquare);
+
+        if(isNull(nextSquare)){
+            return false
+        }
+
+        currentSquare = nextSquare;
+        const travelMove = createRegularMove(
+            kingPosition,
+            currentSquare
+        )
+        travelGame = addMove(game, travelMove);
+    }
+
+    return isInCheck(travelGame, kingColor);
+}
+
+const createCastlingFn = (navigate: NavigateFn, destinationFile: AlphabeticCoordinate) => 
+(game: Game, board: Board, kingColor:PieceColor, kingPosition: Square): Nullable<Castling> => {
+
+    if(hasPieceInBetween(navigate, board, kingColor, kingPosition)){
+        return undefined;
+    }
+
+    if(isCheckedOnTravel(navigate, destinationFile, game, kingColor, kingPosition)){
+        return undefined;
+    }
     
-    return undefined;
+    const kingDestination = kingColor === PieceColor.White
+        ? createSquare(destinationFile, _1)
+        : createSquare(destinationFile, _8); 
+
+    return createCastling(kingPosition, kingDestination);
 }
 
 

@@ -8,7 +8,7 @@ import { squareEquals } from "../square/getters";
 import { applyMoveHistory } from "../board/transitions";
 import { Board } from "../board/Board";
 import { Piece } from "../piece/Piece";
-import { Move } from "../move/Move";
+import { getActiveColor } from "../movehistory/getters";
 
 export const getInitialBoard = (game: Game) => game.initialBoard;
 export const getMovesHistory = (game:Game) => game.moveHistory;
@@ -43,3 +43,8 @@ export const getInitialSquaresForPiece = (game: Game, piece:Piece): Square[] => 
     getInitialBoard(game),
     board => getSquaresForPiece(board, piece)
 );
+
+export const getActivePlayer = flow(
+    getMovesHistory,
+    getActiveColor
+);  

@@ -1,6 +1,8 @@
 import { sequenceT } from 'fp-ts/lib/Apply';
 import * as E from 'fp-ts/lib/Either';
 import { pipe } from 'fp-ts/lib/function';
+import { either } from 'ramda';
+import { E, E } from '../domain/entities/square/Square';
 import { isNull, Nullable } from './nullable';
 
 
@@ -31,6 +33,15 @@ export const assert = <L, Arg>(test: (arg:Arg) => boolean, onLeft: (arg:Arg) => 
         : E.left(onLeft(arg))
 
 
-export const fromNullable =  <L, N>(ifNull: () => L) => (n: Nullable<N>):E.Either<L, N> => 
+export const fromNullable = <L, N>(ifNull: () => L) => (n: Nullable<N>):E.Either<L, N> => 
         isNull(n) ? E.left(ifNull()) : E.right(n);
+
+
+export const getOrThrow = <L, R, E extends Error>(mapLeft: (l:L) => E) => (either: E.Either<L, R>):R => {
+    if(E.isRight(either)){
+        return getOrUndefined(either) as R;
+    } else {
+        throw E.mapLeft(mapLeft)(either);
+    }
+}
         
